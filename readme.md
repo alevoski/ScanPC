@@ -16,7 +16,7 @@ It scans your Windows computer to gather informations like :
 - the firewall state
 - the processes list
 - the services list
-- the antivirus state
+- the antivirus state  
 Started since October 2016  
 Python 3.6 32 bit is used for all new developments.  
 Project ongoing.  
@@ -43,13 +43,13 @@ pip install -r requirements.txt
 
 
 ### HOW TO USE ?
-*** Method 1 - With Pÿthon and all dependencies***  
+**Method 1 - With Python and all dependencies**  
 ```
 cd CS/
 python main.py
 ```
 
-*** Method 2 - Compile the code into an executable file***  
+**Method 2 - Compile the code into an executable file**  
 You will need pyinstaller module 
 ```
 pip install pyinstaller
@@ -60,7 +60,7 @@ Note : you need to compile with a 32 bit Python version to perform scan on 32 bi
   
 Put the code or the exe on a USB key and go scanning some Windows computers.  
 
-**Note : To limit viruses spreading, you should always analyze your scanning devices between two scan !  **
+***Note : To limit viruses spreading, you should always analyze your scanning devices between two scans !***
 [Decontamine_Linux can help you !](https://github.com/alevoski/decontamine_Linux)
 
 #### Demo  
