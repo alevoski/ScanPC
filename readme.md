@@ -1,6 +1,6 @@
 # ScanPC
 [![License](https://img.shields.io/badge/licence-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
-[![Platform](https://img.shields.io/badge/platform-win--32%20%7C%20win--64-lightgrey.svg)]
+![Platform](https://img.shields.io/badge/platform-win--32%20%7C%20win--64-lightgrey.svg)
 [![Language](https://img.shields.io/badge/language-python3-orange.svg)](https://www.python.org/)
 
 ScanPC is an audit tool for Windows.  
