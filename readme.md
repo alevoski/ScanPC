@@ -17,6 +17,7 @@ It scans your Windows computer to gather informations like :
 - the processes list
 - the services list
 - the antivirus state  
+
 Started since October 2016  
 Python 3.6 32 bit is used for all new developments.  
 Project ongoing.  
