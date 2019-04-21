@@ -30,8 +30,10 @@ Then the project has been refreshed in March 2019 with major modifications, in a
         update doctrings
         hotFixesInfo()
             Change KB date format : m/d/Y to Y-m-d
-        servicesInfo() & portsInfo()
+        servicesInfo(), processInfo() & portsInfo()
             Improve display
+            Now return the list of elements found
+            Show total number of elements found before listing
     In verif.py module
         English doctrings
     Better display of the final log

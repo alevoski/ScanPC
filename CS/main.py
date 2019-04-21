@@ -62,9 +62,9 @@ def scanPc(key, logFilePath):
     logSF = scans.sharedFolders(logFile)
     logHotFix = scans.hotFixesInfo(logFile)
     logfilefull = scans.systemInfo(logFile)
-    logProc = scans.processInfo(logFile)
+    procList = scans.processInfo(logFile)
     servicesList = scans.servicesInfo(logFile)
-    logPorts = scans.portsInfo(logFile)
+    portsList = scans.portsInfo(logFile)
 
     texte4 = "\nBasic scan ended.\n"
     writer.write(texte4)

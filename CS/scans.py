@@ -150,7 +150,7 @@ def userInfo(logFile):
     # 4 - Détails sur les utilisateurs
     domain = os.environ['userdomain']
     # print(str(len(usrLstTEMP2)) + ' user(s) found on computer ' + computername)
-    writer.writeLog(logFile, str(len(usrLstTEMP2)) + ' user(s) found on computer ' + computername + '\n')
+    writer.writeLog(logFile, str(len(usrLstTEMP2)) + ' user(s) found on computer ' + computername + ' :\n')
     writer.writeLog(logFile, 'Domain : ' + domain + '\n')
     i = 1
     for user in usrLstTEMP2:
@@ -443,7 +443,7 @@ def systemInfo(logFile):
     #Network interfaces
     network_interface = psutil.net_if_addrs()
     # print(str(len(network_interface)) + ' network interface(s) found\n')
-    writer.writeLog(logFile, str(len(network_interface)) + ' network interfaces found\n')
+    writer.writeLog(logFile, str(len(network_interface)) + ' network interfaces found :\n')
     i = 1
     for k, v in network_interface.items():
         # print('[' + str(i) + '] : ' + k)
@@ -460,7 +460,7 @@ def systemInfo(logFile):
     # Drives
     drives = psutil.disk_partitions()
     # print(str(len(drives)) + ' drive(s) found\n')
-    writer.writeLog(logFile, str(len(drives)) + ' drive(s) found\n')
+    writer.writeLog(logFile, str(len(drives)) + ' drive(s) found :\n')
     # print(drives)
     i = 1
     for drive in drives:
@@ -497,10 +497,10 @@ def processInfo(logFile):
     ~ tasklist /SVC
     ***FR**
     Liste les processus démarrés sur l'ordinateur
-    Retourne le log généré
+    Retourne la liste des processus
     **EN**
     List computer running processes
-    Retourne generated log
+    Retourne the processes list
     '''
     writer.write('Getting running processes')
     # 1 - Ecriture début de log
@@ -509,27 +509,37 @@ def processInfo(logFile):
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des processus démarrés
+    i = 1
+    procList = []
     for proc in psutil.process_iter():
         try:
-            writer.writeLog(logFile, str(proc.name()) + ' ::: ' + str(proc.pid) + '\n')
+            procList.append('[' + str(i) + '] ' + 
+                            str(proc.name()) + ' ::: ' + 
+                            str(proc.pid) + '\n')
+            i+=1
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
+            
+    # 3 - Ecrire la liste sur le log
+    writer.writeLog(logFile, str(len(procList)) + ' running processes :\n')
+    for elem in procList:
+        writer.writeLog(logFile, str(elem))
 
-    # 3 - Ecriture de la fin du log
+    # 4 - Ecriture de la fin du log
     elem = "------------------- Running processes listing finished -------------------"
     writer.prepaLogScan(logFile, elem)
 
-    return logFile
+    return procList
 
 def servicesInfo(logFile):
     '''
     ~ wmic service where started=true get name, startname
     **FR**
     Liste les services démarrés sur l'ordinateur
-    Retourne le log généré
+    Retourne la liste des noms des services démarrés
     **EN**
     List computer started services
-    Return generated log
+    Return the running services names list
     '''
     writer.write('Getting running services')
     # 1 - Ecriture début de log   
@@ -539,6 +549,7 @@ def servicesInfo(logFile):
 
     # 2 - Obtenir la liste des services démarrés
     servicesList = psutil.win_service_iter()
+    servicesListName = []
     servicesListRunning = []
     i = 1
     for srv in servicesList:
@@ -551,27 +562,32 @@ def servicesInfo(logFile):
         if service['status'] == 'running':
             # print('[' + str(i) + ']')
             # print(service)
-            servicesListRunning.append(str(service['name']))
-            writer.writeLog(logFile, '[' + str(i) + ']' + '\n')
+            servicesListName.append(str(service['name']))
+            servicesListRunning.append('[' + str(i) + ']' + '\n')
             for k, v in service.items():
-                writer.writeLog(logFile, str(k) + ':' + str(v) + '\n')
+                servicesListRunning.append(str(k) + ':' + str(v) + '\n')
             i+=1
 
-    # 3 - Ecriture de la fin du log
+    # 3 - Ecrire la liste sur le log
+    writer.writeLog(logFile, str(i - 1) + ' running services :\n')
+    for elem in servicesListRunning:
+        writer.writeLog(logFile, str(elem))
+
+    # 4 - Ecriture de la fin du log
     elem = "------------------- Running services listing finished -------------------"
     writer.prepaLogScan(logFile, elem)
 
-    return servicesListRunning
+    return servicesListName
 
 def portsInfo(logFile):
     '''
     ~ netstat -a
     **FR**
     Liste les communications réseaux de l'ordinateur
-    Retourne le log généré
+    Retourne la liste des connexions réseaux
     **EN**
     List computer network connections
-    Return generated log
+    Return the network connections list
     '''
     writer.write('Getting network connections')
     # 1 - Ecriture début de log
@@ -581,6 +597,7 @@ def portsInfo(logFile):
 
     # 2 - obtenir la liste des connexions actives
     portsList = psutil.net_connections()
+    writer.writeLog(logFile, str(len(portsList)) + ' network connections :\n')
     i = 1
     for ports in portsList:
         # if ports.status == 'ESTABLISHED' or ports.status == 'LISTEN':
@@ -599,7 +616,7 @@ def portsInfo(logFile):
     elem = "------------------- Computer network connections listing finished -------------------"
     writer.prepaLogScan(logFile, elem)
 
-    return logFile  
+    return portsList
   
 if __name__ == '__main__':
     # softwareList = softwareInit()
@@ -613,8 +630,8 @@ if __name__ == '__main__':
     # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testhotfixes.txt")
     # systelInfofile = systemInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
     # systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\04/')
-    # processfile = processInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
-    # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testservices.txt")
-    portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testports.txt")
+    # processfile = processInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testprocess.txt")
+    servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testservices.txt")
+    # portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testports.txt")
     
 # mcAfeeLog = str(logFilePath)+"mcAfeeLog.txt"
