@@ -294,8 +294,8 @@ def hotFixesInfo(logFile):
     colItems = objSWbemServices.ExecQuery("SELECT * FROM Win32_QuickFixEngineering")
     writer.writeLog(logFile, 'HotFixID' + '   ' + 'InstalledOn' + '\n')
     for objItem in colItems:
-        # print(objItem.HotFixID + ' ' + objItem.InstalledOn)
-        writer.writeLog(logFile, objItem.HotFixID + '  ' + objItem.InstalledOn + '\n')
+        # print(objItem.HotFixID + ' ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")))
+        writer.writeLog(logFile, objItem.HotFixID + '  ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")) + '\n')
 
     # 3 - Ecriture fin de log
     elem = "------------------- Windows updates listing ended -------------------"
@@ -540,18 +540,22 @@ def servicesInfo(logFile):
     # 2 - Obtenir la liste des services démarrés
     servicesList = psutil.win_service_iter()
     servicesListRunning = []
-    writer.writeLog(logFile, 'NAME | DISPLAY_NAME | BINPATH | USERNAME | START_TYPE | PID\n')
+    i = 1
     for srv in servicesList:
         srvname = re.findall("name='(.*)',", str(srv))[0]
         serviceTemp = psutil.win_service_get(srvname)
         service = serviceTemp.as_dict()
+        # Remove description
+        del service['description']
+        # Keep running services
         if service['status'] == 'running':
+            # print('[' + str(i) + ']')
+            # print(service)
             servicesListRunning.append(str(service['name']))
-            # writer.writeLog(logFile, str(service) + '\n')
-            writer.writeLog(logFile, str(service['name']) + ' | ' +
-            str(service['display_name']) + ' | ' + str(service['binpath']) + ' | ' + 
-            str(service['username']) + ' | ' + str(service['start_type']) + ' | ' + 
-            str(service['pid']) + '\n')
+            writer.writeLog(logFile, '[' + str(i) + ']' + '\n')
+            for k, v in service.items():
+                writer.writeLog(logFile, str(k) + ':' + str(v) + '\n')
+            i+=1
 
     # 3 - Ecriture de la fin du log
     elem = "------------------- Running services listing finished -------------------"
@@ -577,12 +581,19 @@ def portsInfo(logFile):
 
     # 2 - obtenir la liste des connexions actives
     portsList = psutil.net_connections()
-    # print('Locale address | Remote address | Status | PID')
-    writer.writeLog(logFile, 'LOCALE_ADDRESS | REMOTE_ADDRESS | STATUS | PID\n')
+    i = 1
     for ports in portsList:
         # if ports.status == 'ESTABLISHED' or ports.status == 'LISTEN':
-        # print(str(ports.laddr) + ' ' + str(ports.raddr) + ' ' + str(ports.status) + ' ' + str(ports.pid))
-        writer.writeLog(logFile, str(ports.laddr) + ' ' + str(ports.raddr) + ' ' + str(ports.status) + ' ' + str(ports.pid) + '\n')
+        # print('[' + str(i) + ']' + ' laddr:' + str(ports.laddr) 
+            # + '; raddr:' + str(ports.raddr) 
+            # + '; status:' + str(ports.status) 
+            # + '; pid:' + str(ports.pid))
+        writer.writeLog(logFile, '[' + str(i) + ']')
+        writer.writeLog(logFile, ' laddr:' + str(ports.laddr) 
+                        + '; raddr:' + str(ports.raddr) 
+                        + '; status:' + str(ports.status) 
+                        + '; pid:' + str(ports.pid) + '\n')
+        i+=1
 
     # 3 - Ecriture de la fin du log
     elem = "------------------- Computer network connections listing finished -------------------"
@@ -599,12 +610,11 @@ if __name__ == '__main__':
     # usrfile = userInfo(r"E:\scanPC_dev_encours\TESTS\scans/")
     # pwdfile = pwdPolicy(r"E:\scanPC_dev_encours\TESTS\scans/")
     # sFfile = sharedFolders(r"C:\STOCKAGE\logScanPC\2019\4\7/")
-    # hotFixesfile = hotFixesInfoOLD(r"C:\STOCKAGE\logScanPC\2019\4\7/")
-    # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\4\7/")
+    # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testhotfixes.txt")
     # systelInfofile = systemInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
-    systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\04/')
+    # systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\04/')
     # processfile = processInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
-    # servicesfile = servicesInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
-    # portfile = portsInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
+    # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testservices.txt")
+    portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testports.txt")
     
 # mcAfeeLog = str(logFilePath)+"mcAfeeLog.txt"

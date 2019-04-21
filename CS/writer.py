@@ -16,7 +16,7 @@ def prepaLogScan(logtowrite, elem):
     Write elem in a file pass in parameter
     '''
     elem0 = '*'*len(elem)
-    writeLog(logtowrite, elem0 + '\n' +elem + '\n' + elem0 + '\n')
+    writeLog(logtowrite, elem0 + '\n' +elem + '\n' + elem0 + '\n\n')
 
 def write(txt, timeout=100, eol=True):
     '''

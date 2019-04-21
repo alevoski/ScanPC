@@ -1,7 +1,4 @@
-- Improve display for 
-    services
-    connexions
-- Change kb date : m/d/Y to Y/m/d
+- KB list : order by date
 - Find a way to removed the 3 system calls left
     ask_dismount.py
         line 25 os.system('cls')

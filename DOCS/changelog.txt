@@ -1,8 +1,7 @@
 CHANGELOG
 Note : this project started in October 2016.
-Many improvement have been done since this date until August 2018.
-Then the project has been refreshed in March 2019 with major modifications,
-in a more pythonic way.
+Many improvements have been done since this date until August 2018.
+Then the project has been refreshed in March 2019 with major modifications, in a more pythonic way.
 
 21/04/2019
     In writer.py module
@@ -29,8 +28,14 @@ in a more pythonic way.
         Clean code
             Removed socket import
         update doctrings
+        hotFixesInfo()
+            Change KB date format : m/d/Y to Y-m-d
+        servicesInfo() & portsInfo()
+            Improve display
     In verif.py module
         English doctrings
+    Better display of the final log
+    Scanning time show at the end of the log
 
 20/03/2019 to 20/04/2019
     First commit

@@ -5,6 +5,7 @@
 
 #Standard imports
 import os
+import time
 import shutil
 from datetime import datetime
 
@@ -133,6 +134,9 @@ while True:
     print('\t***************************************************************')
     print()
     while chose == 0:
+        #Begin timer
+        beginScan = time.time()
+        
         #Début du programme
         key = scanPart()
         logFilePath = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/%d%m%y%H%M%S') + "Log" + str(computername)
@@ -140,6 +144,16 @@ while True:
         logFile, softwareDict, servicesList = scanPc(key, logFilePath)
         #Tests complémentaires
         complement.init(logFile, softwareDict, servicesList)
+        
+        #Ending timer
+        endScan = time.time()
+        totalTimeScan = endScan - beginScan
+        elem = "----------------------- Scan ended ------------------------"
+        writer.prepaLogScan(logFile, elem)
+        totalTime = 'Computer analyzed in {} seconds.'.format(round(totalTimeScan, 2))
+        writer.writeLog(logFile, totalTime)
+        writer.write('Computer analyzed in ' + str(round(totalTimeScan, 2)) + ' seconds.\n')
+
         #Fin du programme
         readandcopy(logFile)
         fin(key)
