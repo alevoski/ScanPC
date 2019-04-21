@@ -12,9 +12,6 @@ import writer
 import ask_dismount
 import av_date
 
-username = os.getlogin()
-computername = os.environ['COMPUTERNAME']
-
 def genEicar(log):
     '''
     **FR**
@@ -42,10 +39,10 @@ def genEicar(log):
         userRep = "OK - The antivirus does alert/detect viruses.\n"
     writer.writeLog(log, userRep)
 
-def elemInLog(mode, thelist, elem):
+def elemInList(mode, thelist, elem):
     '''
     **FR**
-    Trouve un élément dans une liste, 
+    Trouve un élément dans une liste
     **EN**
     Find an element in a list
     '''
@@ -93,7 +90,7 @@ def wsus(log, servicesList):
     ''' 
     infoBC = "\n***** WSUS/BranchCache service state *****\n"
     writer.writeLog(log, infoBC)
-    res = elemInLog(2, servicesList, 'PeerDistSvc')
+    res = elemInList(2, servicesList, 'PeerDistSvc')
     writer.writeLog(log, res)
 
     restemp = "N/A\n"
@@ -123,7 +120,7 @@ def init(log, softwareDict, servicesList):
     #LAPS
     infoLaps = "\n***** LAPS state *****\n"
     writer.writeLog(log, infoLaps)
-    res = elemInLog(1, list(softwareDict.keys()), 'Local Admin Password Solution')
+    res = elemInList(1, list(softwareDict.keys()), 'Local Admin Password Solution')
     writer.writeLog(log, res)
 
     ###Services
@@ -134,7 +131,7 @@ def init(log, softwareDict, servicesList):
     ##AppLocker
     infoAL = "\n***** AppLocker service state *****\n"
     writer.writeLog(log, infoAL)
-    res = elemInLog(2, servicesList, 'AppIDSvc')
+    res = elemInList(2, servicesList, 'AppIDSvc')
     writer.writeLog(log, res)
 
     #TestAV

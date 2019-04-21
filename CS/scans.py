@@ -8,7 +8,6 @@ import os
 import re
 from datetime import datetime
 import platform
-import socket
 import psutil
 import win32com.client
 import winreg
@@ -44,7 +43,10 @@ userFlagsDict = {'SCRIPT':1,
 
 def detectOS():
     '''
+    **FR**
     Retourne l'OS utilisé
+    **EN**
+    Return OS used
     '''
     TP = str(platform.platform().lower())
     # print(TP)
@@ -94,7 +96,7 @@ def userInfo(logFile):
     Get AD and local users list of the computer with regedit and WinNT
     Return generated log
     '''
-    print('Getting computer users')
+    writer.write('Getting computer users')
     hive = winreg.HKEY_LOCAL_MACHINE
     keyUsr = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList" # AD users
     registry_key = None
@@ -243,7 +245,7 @@ def sharedFolders(logFile):
     List shared folders
     Return generated log
     '''
-    print('Getting shared folders')
+    writer.write('Getting shared folders')
     # 1 - Ecriture début de log   
     # logSFTEMP = str(logFilePath)+"SF_TEMP.txt"
     elem = "**** Shared folders of computer ''" + computername + "''****"
@@ -279,7 +281,7 @@ def hotFixesInfo(logFile):
     List Windows updates installed
     Return generated log
     '''
-    print('Getting Windows updates')
+    writer.write('Getting Windows updates')
     # 1 - Ecriture début de log
     # logHotFix = str(logFilePath) + "TEMP_hotFixes.txt"
     elem = "**** Windows updates of computer ''" + computername + "''****"
@@ -313,7 +315,7 @@ def systemInfo(logFile):
     Scan system (os, bios, cpu, ram, network interfaces, drives, firewall, etc)
     Return generated log
     '''
-    print('Getting system informations')
+    writer.write('Getting system informations')
     # logFile = str(logFilePath) + "SysInfo_TEMP.txt"
     delimiter = '*' * 40
 
@@ -328,7 +330,7 @@ def systemInfo(logFile):
 
     # 2' - Specific to W10 (ok for 64 bits)
     if detectOS() == '10':
-        print('Perform operations for W10+ OS')
+        writer.write('Perform operations for W10+ OS')
         key = r"SYSTEM\Setup" #\Source OS" #W10
         registry_keys = winreg.OpenKey(hive, key, 0, winreg.KEY_READ)
         i = 0
@@ -435,7 +437,7 @@ def systemInfo(logFile):
     writer.writeLog(logFile, delimiter + '\n')
     
     # Domaine
-    writer.writeLog(logFile, "FQDN : " + socket.getfqdn() + '\n')
+    writer.writeLog(logFile, "Domain : " + os.environ['userdomain'] + '\n')
     writer.writeLog(logFile, delimiter + '\n')
     
     #Network interfaces
@@ -500,7 +502,7 @@ def processInfo(logFile):
     List computer running processes
     Retourne generated log
     '''
-    print('Getting running processes')
+    writer.write('Getting running processes')
     # 1 - Ecriture début de log
     # logFile = str(logFilePath)+"TEMP_proc.txt"
     elem = "***Running processes on computer ''" + computername + "''***"
@@ -529,7 +531,7 @@ def servicesInfo(logFile):
     List computer started services
     Return generated log
     '''
-    print('Getting running services')
+    writer.write('Getting running services')
     # 1 - Ecriture début de log   
     # logFile = logFilePath + "TEMP_services.txt"
     elem = "***Running services on computer ''" + computername + "''***"
@@ -559,7 +561,7 @@ def servicesInfo(logFile):
 
 def portsInfo(logFile):
     '''
-    ~ 
+    ~ netstat -a
     **FR**
     Liste les communications réseaux de l'ordinateur
     Retourne le log généré
@@ -567,7 +569,7 @@ def portsInfo(logFile):
     List computer network connections
     Return generated log
     '''
-    print('Getting network connections')
+    writer.write('Getting network connections')
     # 1 - Ecriture début de log
     # logFile = str(logFilePath) + "TEMP_ports.txt"
     elem = "***Informations about network connections of computer ''" + computername + "''***"

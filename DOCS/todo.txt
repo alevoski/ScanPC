@@ -1,0 +1,11 @@
+- Improve display for 
+    services
+    connexions
+- Change kb date : m/d/Y to Y/m/d
+- Find a way to removed the 3 system calls left
+    ask_dismount.py
+        line 25 os.system('cls')
+        line 61 subprocess.call(cmdlineUser, cwd=dir, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    main.py
+        line 86 os.system("notepad " + str(concatenateBasesFiles1))
+    

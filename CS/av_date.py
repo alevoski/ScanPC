@@ -59,9 +59,6 @@ def getWsus():
     # print(srvWSUS)
     return lstmsg + srvWSUS      
 
-def initMcAfee(logFilePath):
-    return str(logFilePath)+"McAfee.txt"
-
 if __name__ == '__main__':
     date, epoLst = getMcAfee()
     print(date)

@@ -85,7 +85,7 @@ def readandcopy(concatenateBasesFiles1):
     if ask_dismount.reponse() == 'y':
         os.system("notepad " + str(concatenateBasesFiles1))
         
-    # Copie de fichier vers un emplacement défini    
+    # Copie de fichier vers un emplacement défini
     msg0 = "\nDo you want a copy the scan report on the computer (C:\ drive) ? (y = yes, n = no)\n"
     writer.write(msg0)
     if ask_dismount.reponse() == 'y':

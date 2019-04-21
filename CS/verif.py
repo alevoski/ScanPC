@@ -6,11 +6,16 @@
 #Standard imports
 import win32file
 
-#Project modules imports (depuis la version 2.48)
+#Project modules imports
 import ask_dismount
 
 def verifProg(prog, key):
-    '''Recherche d'un programme'''
+    '''
+    **FR**
+    Recherche d'un programme
+    **EN**
+    Search an app
+    '''
     # print (str(listeAv)+" test")#ok
     folder = key
     progFind = ""
@@ -21,12 +26,17 @@ def verifProg(prog, key):
     progFind, progFindPath, compteur = findThat(prog, key)
 
     if compteur == -1:
-        print("\nCe programme a besoin de "+str(prog)+" pour fonctionner !")
+        print("\nThis app needs " + str(prog) + " !")
 
     return progFind, progFindPath
  
 def findThat(prog, folder):
-    ''' Recherche récursive'''
+    ''' 
+    **FR**
+    Recherche récursive
+    **EN**
+    Recursive search
+    '''
     progFind = ""
     progFindPath = ""
     compteur = -1
@@ -49,5 +59,10 @@ def findThat(prog, folder):
     return progFind, progFindPath, compteur
 
 def amovible(key):
-    '''Test si le périphérique passé en paramètre est amovible'''
+    '''
+    **FR**
+    Test si le périphérique passé en paramètre est amovible
+    **EN**
+    Test if device in parameter is removable
+    '''
     return win32file.GetDriveType(key) == win32file.DRIVE_REMOVABLE

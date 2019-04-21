@@ -19,7 +19,7 @@ def quitter():
     **EN**
     Quit
     '''
-    msg = "Appuyez sur n'importe quelle touche pour quitter.\n"
+    msg = "Press any key to quit.\n"
     writer.write(msg)
     msvcrt.getch()
     os.system('cls')
