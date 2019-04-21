@@ -7,11 +7,11 @@ ScanPC is an audit tool for Windows.
 It scans your Windows computer to gather informations like :  
 - the user accounts list
 - the password policy
-- the share folder lists
+- the share folders list
 - the hardware configuration
 - the OS version
 - the network interfaces
-- the Windows updates (KB)list
+- the Windows updates (KB) list
 - the softwares installed
 - the firewall state
 - the processes list
