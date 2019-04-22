@@ -28,21 +28,21 @@ This software has been succesfully tested on the following Microsoft Windows sys
 - 10
 
 ## Getting Started
-Download the project on your computer.
+**Download the project on your computer.**
 ```
 git clone https://github.com/alevoski/ScanPC.git
 ```
 
-### Install the required pip modules
+**Install the required pip modules**
 ```
 pip install -r requirements.txt
 ```
 
-### Optional tool
+**Optional tool**
 RemoveDrive.exe from <https://www.uwe-sieber.de/drivetools_e.html> website is used to dismount device used to scan the computers.  
 
 
-### HOW TO USE ?
+## HOW TO USE ?
 **Method 1 - With Python and all dependencies**  
 ```
 cd CS/
