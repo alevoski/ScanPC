@@ -65,7 +65,7 @@ Put the code or the exe on a USB key and go scanning some Windows computers.
 [Decontamine_Linux can help you !](https://github.com/alevoski/decontamine_Linux)
 
 #### Demo  
-Coming soon  
+![](DOCS/DEMO/scanpc_demo.gif)  
 
 ## Author
 Alexandre Buissé
