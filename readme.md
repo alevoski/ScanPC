@@ -33,14 +33,13 @@ Download the project on your computer.
 git clone https://github.com/alevoski/ScanPC.git
 ```
 
-### Optional tools
-RemoveDrive.exe from <https://www.uwe-sieber.de/drivetools_e.html> website is used to dismount device used to scan the computers.  
-
-
-#### Install the required pip modules
+### Install the required pip modules
 ```
 pip install -r requirements.txt
 ```
+
+### Optional tool
+RemoveDrive.exe from <https://www.uwe-sieber.de/drivetools_e.html> website is used to dismount device used to scan the computers.  
 
 
 ### HOW TO USE ?
