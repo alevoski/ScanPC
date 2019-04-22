@@ -110,40 +110,40 @@ def softwareInit(logFile):
    
     # 6 - Ecriture dans un fichier sous forme de tableau
     #Header du tableau
-    diffLogiciel = maxSoftName-len("Logiciel")
-    logicielHeader = "Logiciel"+" "*diffLogiciel+"|"
+    diffLogiciel = maxSoftName - len("Logiciel")
+    logicielHeader = "Logiciel" + " " * diffLogiciel + "|"
     
-    diffPath = maxLocationName-len("Chemin")
-    pathHeader = "Chemin"+" "*diffPath+"|"
+    diffPath = maxLocationName - len("Chemin")
+    pathHeader = "Chemin" + " " * diffPath + "|"
    
-    diffEditor = maxPublisherName-len("Editeur")
-    editHeader = "Editeur"+" "*diffEditor+"|"
+    diffEditor = maxPublisherName - len("Editeur")
+    editHeader = "Editeur" + " " * diffEditor + "|"
     
-    diffVersion = maxVersionName-len("Version")
-    versionHeader = "Version"+" "*diffVersion+"|"
+    diffVersion = maxVersionName - len("Version")
+    versionHeader = "Version" + " " * diffVersion + "|"
     
     header = logicielHeader + versionHeader + editHeader + pathHeader
-    limHeader = "_"*maxSoftName + "_"*maxLocationName + "_"*maxPublisherName + "_"*maxVersionName
+    limHeader = "_" * maxSoftName + "_" * maxLocationName + "_" * maxPublisherName + "_" * maxVersionName
     
     writer.writeLog(logFile, header + "\n" + limHeader +"\n")
     
     #Valeurs du tableau
     for item, value in sorted(finalDict.items()):
-        diffLogiciel = maxSoftName-len(item)
-        logicielValue= item +" "*diffLogiciel+"|"
-        versionValue = ""
-        editorValue = ""
-        pathValue = ""
+        diffLogiciel = maxSoftName - len(item)
+        logicielValue= item + " " * diffLogiciel + "|"
+        versionValue = " " * maxVersionName + "|"
+        editorValue = " " * maxPublisherName + "|"
+        pathValue = " " * maxLocationName + "|"
         for valuename, subvalue in value.items():
             if valuename == 'installLocation' and subvalue != None:
-                diffPath = maxLocationName-len(subvalue)
-                pathValue= subvalue +" "*diffPath+"|"
+                diffPath = maxLocationName - len(subvalue)
+                pathValue= subvalue + " " * diffPath + "|"
             if valuename == 'publisher' and subvalue != None:
-                diffEditor = maxPublisherName-len(subvalue)
-                editorValue= subvalue +" "*diffEditor+"|"
+                diffEditor = maxPublisherName - len(subvalue)
+                editorValue= subvalue + " " * diffEditor + "|"
             if valuename == 'version' and subvalue != None:
-                diffVersion = maxVersionName-len(subvalue)
-                versionValue = subvalue +" "*diffVersion+"|"
+                diffVersion = maxVersionName - len(subvalue)
+                versionValue = subvalue + " " * diffVersion + "|"
         all = logicielValue + versionValue + editorValue + pathValue
         writer.writeLog(logFile, all + '\n')
 
@@ -219,7 +219,7 @@ def searchSoftware(software, thekey):
             publisherSoft = reg(hive, softkey, publisher)
             pathSoft = reg(hive, softkey, path)
             # print(nameSoft)
-            if nameSoft != None and versionSoft != None and publisherSoft != None:
+            if nameSoft != None and publisherSoft != None: #some software does not have version
                 # print(nameSoft)
                 # print(versionSoft)
                 # print(publisherSoft)
