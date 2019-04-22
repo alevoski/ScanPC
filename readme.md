@@ -38,7 +38,7 @@ git clone https://github.com/alevoski/ScanPC.git
 pip install -r requirements.txt
 ```
 
-**Optional tool**
+**Optional tool**  
 RemoveDrive.exe from <https://www.uwe-sieber.de/drivetools_e.html> website is used to dismount device used to scan the computers.  
 
 
