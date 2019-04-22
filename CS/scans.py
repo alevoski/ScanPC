@@ -294,8 +294,12 @@ def hotFixesInfo(logFile):
     colItems = objSWbemServices.ExecQuery("SELECT * FROM Win32_QuickFixEngineering")
     writer.writeLog(logFile, 'HotFixID' + '   ' + 'InstalledOn' + '\n')
     for objItem in colItems:
-        # print(objItem.HotFixID + ' ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")))
-        writer.writeLog(logFile, objItem.HotFixID + '  ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")) + '\n')
+        try:
+            # print(objItem.HotFixID + ' ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")))
+            writer.writeLog(logFile, objItem.HotFixID + '  ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")) + '\n')
+        except ValueError:
+            # print(objItem.HotFixID + ' ' + str(objItem.InstalledOn))
+            writer.writeLog(logFile, objItem.HotFixID + '  ' + str(objItem.InstalledOn) + '\n')
 
     # 3 - Ecriture fin de log
     elem = "------------------- Windows updates listing ended -------------------"
@@ -627,11 +631,11 @@ if __name__ == '__main__':
     # usrfile = userInfo(r"E:\scanPC_dev_encours\TESTS\scans/")
     # pwdfile = pwdPolicy(r"E:\scanPC_dev_encours\TESTS\scans/")
     # sFfile = sharedFolders(r"C:\STOCKAGE\logScanPC\2019\4\7/")
-    # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testhotfixes.txt")
+    hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testhotfixes.txt")
     # systelInfofile = systemInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
     # systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\04/')
     # processfile = processInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testprocess.txt")
-    servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testservices.txt")
+    # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testservices.txt")
     # portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testports.txt")
     
 # mcAfeeLog = str(logFilePath)+"mcAfeeLog.txt"

@@ -7,6 +7,8 @@ Then the project has been refreshed in March 2019 with major modifications, in a
     In software_scan.py module
         Code correction in softwareInit() to improve software table display
         Code correction in searchSoftware() to get software without version
+    In scans.py module
+        Manage an exception in hotFixesInfo() when a date cannot be parsed or does not exist
 
 21/04/2019
     In writer.py module
