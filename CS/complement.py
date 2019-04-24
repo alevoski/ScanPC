@@ -59,7 +59,7 @@ def elemInList(mode, thelist, elem):
     if elem in thelist:
         result = resultOK
         # print(elem, " found !")
-    return result
+    return elem + ' : ' + result
     
 def mcAfee(compleLog):
     '''
@@ -94,7 +94,7 @@ def wsus(log, servicesList):
     writer.writeLog(log, res)
 
     restemp = "N/A\n"
-    srvWSUS = "Server : " + restemp
+    srvWSUS = "WSUS server : " + restemp
     try:
         srvWSUS = av_date.getWsus()
     except Exception:
@@ -120,7 +120,7 @@ def init(log, softwareDict, servicesList):
     #LAPS
     infoLaps = "\n***** LAPS state *****\n"
     writer.writeLog(log, infoLaps)
-    res = elemInList(1, list(softwareDict.keys()), 'Local Admin Password Solution')
+    res = elemInList(1, list(softwareDict.keys()), 'Local Administrator Password Solution')
     writer.writeLog(log, res)
 
     ###Services

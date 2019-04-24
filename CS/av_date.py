@@ -38,7 +38,7 @@ def getMcAfee():
     keySrvLst = r"SOFTWARE\WOW6432Node\Network Associates\ePolicy Orchestrator\Agent"
     epoLst = "ePOServerList"
     srvList = reg(hive, keySrvLst, epoLst)
-    lstmsg = "`\n--Liste des serveurs EPO--\n"
+    lstmsg = "`\n--EPO servers list--\n"
     # print("{d[2]}/{d[1]}/{d[0]} ({v})".format(d=date,v=version))
     return "Date & version : {d[2]}/{d[1]}/{d[0]} ({v})".format(d=date,v=version), lstmsg + srvList.replace(';', '\n')
 
@@ -55,7 +55,7 @@ def getWsus():
     srv = "WUServer"
     
     srvWSUS = reg(hive, keySrv, srv)
-    lstmsg = "Serveur : "
+    lstmsg = "WSUS server : "
     # print(srvWSUS)
     return lstmsg + srvWSUS      
 

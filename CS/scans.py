@@ -81,7 +81,7 @@ def calcFlag(userFlagsDict, flag):
             min = flag - v
             flagTosave = v
             break
-        if v < flag:
+        if v < flag and v > flagTosave:
             min = flag - v
             flagTosave = v
     return min, flagTosave

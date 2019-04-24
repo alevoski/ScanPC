@@ -110,14 +110,14 @@ def softwareInit(logFile):
    
     # 6 - Ecriture dans un fichier sous forme de tableau
     #Header du tableau
-    diffLogiciel = maxSoftName - len("Logiciel")
-    logicielHeader = "Logiciel" + " " * diffLogiciel + "|"
+    diffLogiciel = maxSoftName - len("Name")
+    logicielHeader = "Name" + " " * diffLogiciel + "|"
     
-    diffPath = maxLocationName - len("Chemin")
-    pathHeader = "Chemin" + " " * diffPath + "|"
+    diffPath = maxLocationName - len("Location")
+    pathHeader = "Location" + " " * diffPath + "|"
    
-    diffEditor = maxPublisherName - len("Editeur")
-    editHeader = "Editeur" + " " * diffEditor + "|"
+    diffEditor = maxPublisherName - len("Publisher")
+    editHeader = "Publisher" + " " * diffEditor + "|"
     
     diffVersion = maxVersionName - len("Version")
     versionHeader = "Version" + " " * diffVersion + "|"
@@ -125,6 +125,7 @@ def softwareInit(logFile):
     header = logicielHeader + versionHeader + editHeader + pathHeader
     limHeader = "_" * maxSoftName + "_" * maxLocationName + "_" * maxPublisherName + "_" * maxVersionName
     
+    writer.writeLog(logFile, str(len(finalDict)) + ' software found :\n')
     writer.writeLog(logFile, header + "\n" + limHeader +"\n")
     
     #Valeurs du tableau
@@ -219,7 +220,8 @@ def searchSoftware(software, thekey):
             publisherSoft = reg(hive, softkey, publisher)
             pathSoft = reg(hive, softkey, path)
             # print(nameSoft)
-            if nameSoft != None and publisherSoft != None: #some software does not have version
+            # Conditions : some software does not have version & avoid Microsoft Updates
+            if nameSoft != None and nameSoft != '' and 'Update for' not in nameSoft and publisherSoft != None:
                 # print(nameSoft)
                 # print(versionSoft)
                 # print(publisherSoft)
