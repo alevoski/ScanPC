@@ -96,7 +96,7 @@ def wsus(log, servicesList):
     restemp = "N/A\n"
     srvWSUS = "WSUS server : " + restemp
     try:
-        srvWSUS = av_date.getWsus()
+        srvWSUS = av_date.getWsus() + '\n'
     except Exception:
         # print(Exception)
         pass
