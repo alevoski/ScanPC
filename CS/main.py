@@ -7,6 +7,7 @@
 import os
 import time
 import shutil
+import webbrowser
 from datetime import datetime
 
 #Project modules imports
@@ -47,7 +48,24 @@ def scanPc(key, logFilePath):
     texte3 = "Computer scanning in progress... Please wait...\n"
     writer.write(texte3)
     
-    logFile = str(logFilePath) + "FINAL.txt"
+    logFile = str(logFilePath) + "FINAL.html"
+    
+    #write first html tags
+    elementRaw = """<!DOCTYPE html>
+    <html>
+        <head>
+            <title>ScanPC result</title>
+            <meta charset="utf-8">
+        </head>
+        <body>
+            <p>
+            {0} <br>
+            {1} <br>
+            {2} <br>
+            {3} <br>
+            </p>"""
+            # </body>
+        # </html>"""
     
     #texte d'intro 
     texte01 = '*'*114 + '\n'
@@ -55,24 +73,25 @@ def scanPc(key, logFilePath):
     element2 = '\n' + '-' * 26 + datetime.now().strftime("%A %d %B %Y %H:%M:%S") + '-' *26 + '\n'
     # logIntro = str(logFilePath)+"intro.txt"
     element0 = texte01 + texte02 + element2 + texte01
-    writer.writeLog(logFile, element0)
-    
+    element = elementRaw.format(texte01, texte02, element2, texte01)
+    writer.writeLog(logFile, element)
+
     #Scans de bases
-    logAllUsers = scans.userInfo(logFile)
-    logSF = scans.sharedFolders(logFile)
-    logHotFix = scans.hotFixesInfo(logFile)
-    logfilefull = scans.systemInfo(logFile)
-    procList = scans.processInfo(logFile)
-    servicesList = scans.servicesInfo(logFile)
-    portsList = scans.portsInfo(logFile)
+    logAllUsers = scans.userInfo(logFilePath)
+    logSF = scans.sharedFolders(logFilePath)
+    hotfixDict = scans.hotFixesInfo(logFilePath)
+    logfilefull = scans.systemInfo(logFilePath)
+    procDict = scans.processInfo(logFilePath)
+    servicesDictRunning = scans.servicesInfo(logFilePath)
+    portsDict = scans.portsInfo(logFilePath)
 
     texte4 = "\nBasic scan ended.\n"
     writer.write(texte4)
     
     #Scan des logiciels
-    softwareDict = software_scan.softwareInit(logFile)
+    softwareDict = software_scan.softwareInit(logFilePath)
 
-    return logFile, softwareDict, servicesList
+    return logFile, softwareDict, servicesDictRunning
 
 def readandcopy(concatenateBasesFiles1):
     '''
@@ -84,7 +103,18 @@ def readandcopy(concatenateBasesFiles1):
     msg0 = "\nDo you want to read the scan report ? (y = yes, n = no)\n"
     writer.write(msg0)
     if ask_dismount.reponse() == 'y':
-        os.system("notepad " + str(concatenateBasesFiles1))
+        openers = webbrowser._tryorder
+        opened = 0
+        for browsers in openers:
+            # print(browsers)
+            if 'firefox' in browsers.lower() or 'iexplore' in browsers.lower():
+                # print('Opening with ' + browsers)
+                browser = webbrowser.get(webbrowser._tryorder[openers.index(browsers)])
+                browser.open('file:' + str(concatenateBasesFiles1))
+                opened = 1
+                break
+        if opened ==0:
+            webbrowser.open(str(concatenateBasesFiles1))
         
     # Copie de fichier vers un emplacement défini
     msg0 = "\nDo you want a copy the scan report on the computer (C:\ drive) ? (y = yes, n = no)\n"
@@ -139,11 +169,13 @@ while True:
         
         #Début du programme
         key = scanPart()
-        logFilePath = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/%d%m%y%H%M%S') + "Log" + str(computername)
+        uniqueDir = str(computername) + '_' + datetime.now().strftime('%d%m%y%H%M%S')
+        logFilePath = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/') + uniqueDir + '/' + uniqueDir
         #Appelle de scanPC
-        logFile, softwareDict, servicesList = scanPc(key, logFilePath)
+        logFile, softwareDict, servicesDictRunning = scanPc(key, logFilePath)
         #Tests complémentaires
-        complement.init(logFile, softwareDict, servicesList)
+        complement.init(logFilePath, softwareDict, servicesDictRunning)
+        writer.writeLog(logFile, '\n</div>\n')
         
         #Ending timer
         endScan = time.time()
@@ -153,6 +185,12 @@ while True:
         totalTime = 'Computer analyzed in {} seconds.'.format(round(totalTimeScan, 2))
         writer.writeLog(logFile, totalTime)
         writer.write('Computer analyzed in ' + str(round(totalTimeScan, 2)) + ' seconds.\n')
+        
+        #write last html tags
+        elementRaw = """
+            </body>
+        </html>"""
+        writer.writeLog(logFile, elementRaw)
 
         #Fin du programme
         readandcopy(logFile)

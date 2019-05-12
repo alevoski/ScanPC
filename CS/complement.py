@@ -32,11 +32,11 @@ def genEicar(log):
     #Demande à l'utilisateur
     msg0 = "\nDid the antivirus alert you ? (y = yes, n = no)\n"
     writer.write(msg0)
-    avEtat = "\n***** Antivirus status *****\n"
+    avEtat = "<br>***** Antivirus status *****<br>"
     writer.writeLog(log, avEtat)
-    userRep = "FAILED - The antivirus does not alert/detect viruses.\n"
+    userRep = "FAILED - The antivirus does not alert/detect viruses.<br>\n"
     if ask_dismount.reponse() == 'y':
-        userRep = "OK - The antivirus does alert/detect viruses.\n"
+        userRep = "OK - The antivirus does alert/detect viruses.<br>\n"
     writer.writeLog(log, userRep)
 
 def elemInList(mode, thelist, elem):
@@ -70,69 +70,71 @@ def mcAfee(compleLog):
     '''
     restemp = "N/A"
     dateVer = "Date & version : " + restemp
-    epoLst = "\n--EPO servers list--\n" + restemp
+    epoLst = "\n--EPO servers list--<br>" + restemp
     try:
         dateVer, epoLst = av_date.getMcAfee()
     except Exception:
         # print(Exception)
         pass
-    infoMcAfee = "***** McAfee informations *****\n"
+    infoMcAfee = "***** McAfee informations *****<br>"
     writer.writeLog(compleLog, infoMcAfee)
-    writer.writeLog(compleLog, dateVer)
-    writer.writeLog(compleLog, epoLst + '\n')
+    writer.writeLog(compleLog, dateVer + '<br>')
+    writer.writeLog(compleLog, epoLst + '<br>\n')
     
-def wsus(log, servicesList):
+def wsus(log, servicesDictRunning):
     '''
     **FR**
     Récupere une information complémentaire sur WSUS/BranchCache
     **EN**
     Get more informations about WSUS/BranchCache
     ''' 
-    infoBC = "\n***** WSUS/BranchCache service state *****\n"
+    infoBC = "<br>***** WSUS/BranchCache service state *****<br>"
     writer.writeLog(log, infoBC)
-    res = elemInList(2, servicesList, 'PeerDistSvc')
-    writer.writeLog(log, res)
+    res = elemInList(2, list(servicesDictRunning.keys()), 'PeerDistSvc')
+    writer.writeLog(log, res  + '<br>')
 
-    restemp = "N/A\n"
+    restemp = "N/A<br>\n"
     srvWSUS = "WSUS server : " + restemp
     try:
-        srvWSUS = av_date.getWsus() + '\n'
+        srvWSUS = av_date.getWsus() + '<br>'
     except Exception:
         # print(Exception)
         pass
     writer.writeLog(log, srvWSUS)
     
-def init(log, softwareDict, servicesList):
+def init(logFilePath, softwareDict, servicesDictRunning):
     '''
     **FR**
     Initialisation de la recherche d'infos complémentaires
     **EN**
     Init search
     '''
-    # 1 - Ecriture début de log (à la fin du log fourni)  
+    # 1 - Ecriture début de log (à la fin du log fourni)
+    log = logFilePath + "final.html"
     elem = "************* Other tests *************"
     writer.prepaLogScan(log, elem)
+    writer.writeLog(log, '<div>\n')
 
     # 2 - Obtention des informations complémentaires
     #McAfee
     mcAfee(log)
 
     #LAPS
-    infoLaps = "\n***** LAPS state *****\n"
+    infoLaps = "<br>***** LAPS state *****<br>"
     writer.writeLog(log, infoLaps)
     res = elemInList(1, list(softwareDict.keys()), 'Local Administrator Password Solution')
-    writer.writeLog(log, res)
+    writer.writeLog(log, res + '<br>')
 
     ###Services
 
     ##BranchCache/WSUS
-    wsus(log, servicesList)
+    wsus(log, servicesDictRunning)
 
     ##AppLocker
-    infoAL = "\n***** AppLocker service state *****\n"
+    infoAL = "<br>***** AppLocker service state *****<br>"
     writer.writeLog(log, infoAL)
-    res = elemInList(2, servicesList, 'AppIDSvc')
-    writer.writeLog(log, res)
+    res = elemInList(2, list(servicesDictRunning.keys()), 'AppIDSvc')
+    writer.writeLog(log, res  + '<br>')
 
     #TestAV
     msg0 = "\nDo you want to perform an antivirus detection test ? (y = yes, n = no)\n"

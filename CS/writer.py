@@ -7,6 +7,8 @@
 from sys import stdout
 from time import sleep
 import os
+import csv
+from cgi import escape
 
 def prepaLogScan(logtowrite, elem):
     '''
@@ -16,7 +18,7 @@ def prepaLogScan(logtowrite, elem):
     Write elem in a file pass in parameter
     '''
     elem0 = '*'*len(elem)
-    writeLog(logtowrite, elem0 + '\n' +elem + '\n' + elem0 + '\n\n')
+    writeLog(logtowrite, elem0 + '<br>\n' +elem + '<br>\n' + elem0 + '<br>\n<br>\n')
 
 def write(txt, timeout=100, eol=True):
     '''
@@ -49,6 +51,66 @@ def writeLog(logFile, element):
     dirToCreate = os.path.dirname(os.path.abspath(logFile))
     # print (dirToCreate)
     if not os.path.exists(dirToCreate):
-        os.makedirs(dirToCreate)      
+        os.makedirs(dirToCreate)
     with open(logFile, mode='a', encoding='utf-8') as f:
         f.write(element)
+
+def writeCSV(logFile, fieldnames, dictElement):
+    '''
+    **FR**
+    Enregistrement des logs au format CSV
+    **EN**
+    Write logs in CSV format
+    '''
+    with open(logFile, mode='w', newline='', encoding='utf-8-sig') as csvfile:
+        writerCSV = csv.DictWriter(csvfile, delimiter=';', fieldnames=fieldnames)
+        writerCSV.writeheader()
+        for elems, values in sorted(dictElement.items()):
+            writerCSV.writerow(values)
+            
+def _row2tr(row, attr=None):
+    '''
+    **FR**
+    Transforme les lignes (issues d'un fichier CSV) en lignes de tableau HTML
+    **EN**
+    Transform rows (from a CSV file) in HTML table rows
+    '''
+    cols = row.split(';')
+    return ('<TR>'
+            + ''.join('<TD>%s</TD>' % data for data in cols)
+            + '</TR>')
+            
+def _rowheader(row, attr=None):
+    '''
+    **FR**
+    Transforme les lignes (issues d'un fichier CSV) en lignes d'entête de tableau HTML
+    **EN**
+    Transform rows (from a CSV file) in HTML table rows header
+    '''
+    cols = escape(row).split(';')
+    return ('<TR>'
+            + ''.join('<TH>%s</TH>' % data for data in cols)
+            + '</TR>')
+
+def csv2html(csvFile, summary):
+    '''
+    **FR**
+    Transforme un fichier CSV en tableau HTML
+    **EN**
+    Transform a CSV file in an HTML table
+    '''
+    htmltxt = '<TABLE border=1, summary="' + summary + '">\n'
+    with open(csvFile, mode='r', encoding='utf-8-sig') as f:
+        csvfile = f.read()
+    for rownum, row in enumerate(csvfile.split('\n')):
+        if row != '':
+            #Prepare header
+            if rownum == 0:
+                # print(row)
+                htmlrow = _rowheader(row)
+            else:
+                htmlrow = _row2tr(row)
+            htmlrow = '  <TBODY>%s</TBODY>\n' % htmlrow
+            htmltxt += htmlrow
+    htmltxt += '</TABLE>\n'
+    return htmltxt

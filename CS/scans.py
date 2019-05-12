@@ -86,7 +86,7 @@ def calcFlag(userFlagsDict, flag):
             flagTosave = v
     return min, flagTosave
 
-def userInfo(logFile):
+def userInfo(logFilePath):
     '''
     ~ net user <username> /domain    &    net user <username>
     **FR**
@@ -142,69 +142,52 @@ def userInfo(logFile):
                 # print("oups")
                 pass
 
+    domain = os.environ['userdomain']
     # 3 - Ecriture début de log
-    # logAllUsersTEMP = logFilePath + "users_TEMP.txt"
-    elem = "*******Getting details about the "+str(len(usrLstTEMP2)) + " user(s) of computer ''" + computername + "''*******"
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
+    elem = "*******Getting details about the " + str(len(usrLstTEMP2)) + " user(s) of computer ''" + computername + "''*******"
+    elem2 = "<br>Domain : " + str(domain) + '\n'
     writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, elem2)
 
     # 4 - Détails sur les utilisateurs
-    domain = os.environ['userdomain']
-    # print(str(len(usrLstTEMP2)) + ' user(s) found on computer ' + computername)
-    writer.writeLog(logFile, str(len(usrLstTEMP2)) + ' user(s) found on computer ' + computername + ' :\n')
-    writer.writeLog(logFile, 'Domain : ' + domain + '\n')
-    i = 1
+    userDict = {}
     for user in usrLstTEMP2:
-        writer.writeLog(logFile, '[' + str(i) + '] : ' + user + '\n')
         try:
             objOU = win32com.client.GetObject("WinNT://" + domain + "/" + user + ",user")
             #User account
-            writer.writeLog(logFile, '****User account****\n')
-            writer.writeLog(logFile, 'Full name : ' + str(objOU.Get('fullname')) + '\n')
-            # print('Description : ' + str(objOU.Get('Description')))
-            # print('Account Disabled ? : ' + str(objOU.Get('AccountDisabled')))
-            # print('Account active ? : ' + str(objOU.Get('active')))
+            fullname = str(objOU.Get('fullname'))
             try:
-                writer.writeLog(logFile, 'Expiration date : ' + str(objOU.Get('AccountExpirationDate')) + '\n')
+                expirationDate = str(objOU.Get('AccountExpirationDate'))
             except Exception as e:
-                writer.writeLog(logFile, 'Expiration date : N/A\n')
-            # print('Password Last Changed : ' + str(objOU.Get('PasswordLastChanged')))
-            # print('Account Locked ? : ' + str(objOU.Get('IsAccountLocked')))
-            writer.writeLog(logFile, 'Profile : ' + str(objOU.Get('Profile')) + '\n')
-            writer.writeLog(logFile, 'Login script : ' + str(objOU.Get('LoginScript')) + '\n')
-            writer.writeLog(logFile, 'Last login : ' + str(objOU.Get('lastlogin')) + '\n')
-            # print('ObjectSID : ' + str(objOU.Get('ObjectSID')))
-            # print(objOU.Get('Parameters').encode('iso-8859-1', 'ignore'))
-            writer.writeLog(logFile, 'Primary group ID : ' + str(objOU.Get('PrimaryGroupID')) + '\n')
-            writer.writeLog(logFile, 'Auto unlock interval : ' + str(objOU.Get('AutoUnlockInterval')) + ' secs\n')
-            writer.writeLog(logFile, 'Lockout observation interval : ' + str(objOU.Get('LockoutObservationInterval')) + ' secs\n')
-            # print('LoginHours : ' + str(objOU.Get('LoginHours')))
-            writer.writeLog(logFile, 'Home directory : ' + str(objOU.Get('HomeDirectory')) + '\n')
-            writer.writeLog(logFile, 'Home dir drive : ' + str(objOU.Get('HomeDirDrive')) + '\n')
+                expirationDate = 'N/A'
+            profile = str(objOU.Get('Profile'))
+            loginScript = str(objOU.Get('LoginScript'))
+            lastLogin = str(objOU.Get('lastlogin'))
+            primaryGroupID = str(objOU.Get('PrimaryGroupID'))
+            autoUnlockInterval = str(objOU.Get('AutoUnlockInterval'))
+            lockoutObservationInterval = str(objOU.Get('LockoutObservationInterval'))
+            homedir = str(objOU.Get('HomeDirectory'))
+            homedirDrive = str(objOU.Get('HomeDirDrive'))
             
             #Password
-            writer.writeLog(logFile, '****Password****\n')
-            # print('UserCannotChangePassword : ' + str(objOU.Get('UserCannotChangePassword')))
-            writer.writeLog(logFile, 'Age : ' + str(round(objOU.Get('PasswordAge')/3600/24)) + ' days\n')
-            # print('Password last change date : ' + str())
-            # print('Password Age : ' + str(objOU.Get('PasswordAgeDate')))
-            writer.writeLog(logFile, 'Min age : ' + str(round(objOU.Get('MinPasswordAge')/3600/24)) + ' days\n')
-            writer.writeLog(logFile, 'Max age : ' + str(round(objOU.Get('MaxPasswordAge')/3600/24)) + ' days\n')
-            # print('Password expiration date : ' + str(objOU.Get('PasswordExpirationDate')))
-            writer.writeLog(logFile, 'Expired ? : ' + str(objOU.Get('PasswordExpired')) + '\n')
-            writer.writeLog(logFile, 'Max bad passwords allowed : ' + str(objOU.Get('MaxBadPasswordsAllowed')) + '\n')
-            writer.writeLog(logFile, 'Min length : ' + str(objOU.Get('MinPasswordLength')) + '\n')
-            writer.writeLog(logFile, 'History length : ' + str(objOU.Get('PasswordHistoryLength')) + '\n')
-            
+            pwdAge = str(round(objOU.Get('PasswordAge')/3600/24))
+            pwdMinAge = str(round(objOU.Get('MinPasswordAge')/3600/24))
+            pwdMaxAge = str(round(objOU.Get('MaxPasswordAge')/3600/24))
+            pwdExpired = str(objOU.Get('PasswordExpired'))
+            pwdMaxBadpwdAllowed = str(objOU.Get('MaxBadPasswordsAllowed'))
+            pwdMinLength = str(objOU.Get('MinPasswordLength'))
+            pwdHistoryLength = str(objOU.Get('PasswordHistoryLength'))
+
             #Groups
-            writer.writeLog(logFile,'****Groups****\n')
-            # print('NAME      |       DESCRIPTION')
+            groupsList = []
             for grp in objOU.Groups():
-                writer.writeLog(logFile, grp.Name + '\n') # + '      |       ' + grp.Description)
-            
+                groupsList.append(grp.Name + '<br>')
+
             #Flag
-            writer.writeLog(logFile, '****Flag****\n')
+            flagFinalList = []
             flag = objOU.Get('UserFlags')
-            writer.writeLog(logFile, 'User flag : ' + str(flag) + '\n')
             #Get flags with user flag (user flag = sum(flags))
             flagList = []
             min, flagTosave = calcFlag(userFlagsDict, flag)
@@ -212,30 +195,48 @@ def userInfo(logFile):
             while min != 0:
                 min, flagTosave = calcFlag(userFlagsDict, min)
                 flagList.append(flagTosave)
-            
             #Verify if flag = sum(flagList)
             if flag == sum(flagList):
-                writer.writeLog(logFile, str(flag) + ' = ' + str(flagList) + '\n')
-                
+                flagFinalList.append(str(flag) + ' => ' + str(flagList) + '<br>')
                 #Get flags description with flag nums saved
-                writer.writeLog(logFile, 'This flag means the user account has this properties :\n')
+                flagFinalList.append('Flag properties :')
                 for k, v in userFlagsDict.items():
                     if v in flagList:
-                        writer.writeLog(logFile, str(v) + ' : ' + str(k) + '\n')
-            writer.writeLog(logFile, '*' * 20 + '\n')
-            
+                        flagFinalList.append('<br>' + str(v) + ' : ' + str(k))
+            userDict[user] = {'User':user, 'Fullname':fullname, 'Expiration_Date':expirationDate,
+                            'Profile':profile, 'Login_Script':loginScript, 'Last_Login':lastLogin, 
+                            'Primary_Group_ID':primaryGroupID, 'Auto_Unlock_Interval (secs)': autoUnlockInterval, 
+                            'Lockout_Observation_Interval (secs)':lockoutObservationInterval,
+                            'HomeDir':homedir, 'HomeDirDrive':homedirDrive, 
+                            'pwdAge (days)':pwdAge, 'pwdMinAge (days)':pwdMinAge, 'pwdMaxAge (days)':pwdMaxAge, 
+                            'pwdExpired':pwdExpired, 'pwdMaxBadpwdAllowed':pwdMaxBadpwdAllowed,
+                            'pwdMinLength':pwdMinLength, 'pwdHistoryLength':pwdHistoryLength,
+                            'Groups':(''.join(groupsList)), 'Flag':(''.join(flagFinalList))}
+
         except Exception as e:
-            # print(e)
             pass
         i+=1
-        
+
+    if userDict != '':
+        # Ecriture du fichier CSV
+        header = ['User', 'Fullname', 'Expiration_Date', 'Profile', 'Login_Script', 'Last_Login',
+                'Primary_Group_ID', 'Auto_Unlock_Interval (secs)', 'Lockout_Observation_Interval (secs)',
+                'HomeDir', 'HomeDirDrive','pwdAge (days)', 'pwdMinAge (days)', 'pwdMaxAge (days)', 
+                'pwdExpired', 'pwdMaxBadpwdAllowed', 'pwdMinLength', 'pwdHistoryLength', 'Groups', 'Flag']
+        csvFile = logFilePath + "users.csv"
+        writer.writeCSV(csvFile, header, userDict)
+        # Transformation du CSV en HTML
+        htmltxt = writer.csv2html(csvFile, 'Users details')
+        writer.writeLog(logFile, htmltxt)
+
     # 5 - Ecriture de la fin du log
     elem = "----------------------- Users listing ended ------------------------"
     writer.prepaLogScan(logFile, elem)
-    
+    writer.writeLog(logFile, '\n</div>\n')
+
     return logFile
 
-def sharedFolders(logFile):
+def sharedFolders(logFilePath):
     '''
     ~ net share
     **FR**
@@ -246,31 +247,38 @@ def sharedFolders(logFile):
     Return generated log
     '''
     writer.write('Getting shared folders')
-    # 1 - Ecriture début de log   
-    # logSFTEMP = str(logFilePath)+"SF_TEMP.txt"
+    # 1 - Ecriture début de log
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
     elem = "**** Shared folders of computer ''" + computername + "''****"
     writer.prepaLogScan(logFile, elem)
-    
+
     # 2 - Obtenir la liste des dossiers partagés de l'ordinateur
     strComputer = "."
     objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
     objSWbemServices = objWMIService.ConnectServer(strComputer,"root\cimv2")
     colItems = objSWbemServices.ExecQuery("SELECT * FROM Win32_Share")
-    i = 1
+    sfDict = {}
     for objItem in colItems:
-        writer.writeLog(logFile, '[' + str(i) + ']Name : ' + str(objItem.Name) + '\n')
-        writer.writeLog(logFile, 'Path : ' + str(objItem.Path) + '\n')
-        writer.writeLog(logFile, 'Caption : ' + str(objItem.Caption) + '\n')
-        writer.writeLog(logFile, 'Description : ' + str(objItem.Description) + '\n')
-        i+=1
-        
-    # 3 - Ecriture de la fin du log
+        sfDict[str(objItem.Name)] = {'Name':str(objItem.Name), 'Path':str(objItem.Path),
+                                    'Caption':str(objItem.Caption), 'Description':str(objItem.Description)}
+
+    # 3 - Ecriture du fichier CSV
+    header = ['Name', 'Path', 'Caption', 'Description']
+    csvFile = logFilePath + "sharedFolders.csv"
+    writer.writeCSV(csvFile, header, sfDict)
+    # Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Shared Folders')
+    writer.writeLog(logFile, htmltxt)
+
+    # 5 - Ecriture de la fin du log
     elem = "------------------- Shared folders listing ended -------------------"
     writer.prepaLogScan(logFile, elem)
-    
+    writer.writeLog(logFile, '\n</div>\n')
+
     return logFile
 
-def hotFixesInfo(logFile):
+def hotFixesInfo(logFilePath):
     '''
     https://www.activexperts.com/admin/scripts/wmi/python/0417/
     ~ wmic qfe get HotfixID,InstalledOn | more
@@ -283,7 +291,8 @@ def hotFixesInfo(logFile):
     '''
     writer.write('Getting Windows updates')
     # 1 - Ecriture début de log
-    # logHotFix = str(logFilePath) + "TEMP_hotFixes.txt"
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
     elem = "**** Windows updates of computer ''" + computername + "''****"
     writer.prepaLogScan(logFile, elem)
 
@@ -292,22 +301,32 @@ def hotFixesInfo(logFile):
     objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
     objSWbemServices = objWMIService.ConnectServer(strComputer,"root\cimv2")
     colItems = objSWbemServices.ExecQuery("SELECT * FROM Win32_QuickFixEngineering")
-    writer.writeLog(logFile, 'HotFixID' + '   ' + 'InstalledOn' + '\n')
+    hotfixDict = {}
     for objItem in colItems:
         try:
-            # print(objItem.HotFixID + ' ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")))
-            writer.writeLog(logFile, objItem.HotFixID + '  ' + str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d")) + '\n')
+            hotfixDict[objItem.HotFixID] = {'HotFixID':objItem.HotFixID, 
+                        'InstalledOn':str(datetime.strptime(str(objItem.InstalledOn), "%m/%d/%Y").strftime("%Y-%m-%d"))}
         except ValueError:
-            # print(objItem.HotFixID + ' ' + str(objItem.InstalledOn))
-            writer.writeLog(logFile, objItem.HotFixID + '  ' + str(objItem.InstalledOn) + '\n')
+            hotfixDict[objItem.HotFixID] = {'HotFixID':objItem.HotFixID, 
+                        'InstalledOn':str(objItem.InstalledOn)}
 
-    # 3 - Ecriture fin de log
+    # 3 - Ecriture du fichier CSV
+    header = ['HotFixID', 'InstalledOn']
+    csvFile = logFilePath + "hotfixes.csv"
+    writer.writeCSV(csvFile, header, hotfixDict)
+    
+    # 4 - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Hotfixes')
+
+    # 5 - Ecriture fin de log
+    writer.writeLog(logFile, htmltxt)
     elem = "------------------- Windows updates listing ended -------------------"
     writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, '\n</div>\n')
 
-    return logFile
+    return hotfixDict
 
-def systemInfo(logFile):
+def systemInfo(logFilePath):
     '''
     ~ systeminfo | find /V /I "hotfix" | find /V "KB"
     ~ wmic logicaldisk get volumename, description, FileSystem, Caption, ProviderName
@@ -320,10 +339,11 @@ def systemInfo(logFile):
     Return generated log
     '''
     writer.write('Getting system informations')
-    # logFile = str(logFilePath) + "SysInfo_TEMP.txt"
     delimiter = '*' * 40
 
     # 1 - Ecriture début de log
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
     elem = "*************************** System information of computer ''" + computername + "''***************************"
     writer.prepaLogScan(logFile, elem)
 
@@ -373,13 +393,13 @@ def systemInfo(logFile):
     # print(dictToSave)
 
     # OS
-    writer.writeLog(logFile, 'Hostname : ' + platform.node() + '\n')
+    writer.writeLog(logFile, 'Hostname : ' + platform.node() + '<br>\n')
     # print('OS : ' + platform.system() + ' ' + platform.version())
-    writer.writeLog(logFile, 'OS : ' + dictToSave.get('ProductName') + '\n')
-    writer.writeLog(logFile, 'OS type : ' + platform.machine() + '\n')
-    writer.writeLog(logFile, 'Product Id : ' + dictToSave.get('ProductId') + '\n')
-    writer.writeLog(logFile, 'Install Date: ' + str(datetime.fromtimestamp(dictToSave.get('InstallDate'))) + '\n')
-    writer.writeLog(logFile, 'System Root: ' + dictToSave.get('SystemRoot') + '\n')
+    writer.writeLog(logFile, 'OS : ' + dictToSave.get('ProductName') + '<br>\n')
+    writer.writeLog(logFile, 'OS type : ' + platform.machine() + '<br>\n')
+    writer.writeLog(logFile, 'Product Id : ' + dictToSave.get('ProductId') + '<br>\n')
+    writer.writeLog(logFile, 'Install Date: ' + str(datetime.fromtimestamp(dictToSave.get('InstallDate'))) + '<br>\n')
+    writer.writeLog(logFile, 'System Root: ' + dictToSave.get('SystemRoot') + '<br>\n')
     
     # Language
     bufSize = 32
@@ -387,16 +407,16 @@ def systemInfo(logFile):
     dwFlags = 0
     lcid = ctypes.windll.kernel32.GetUserDefaultUILanguage()
     ctypes.windll.kernel32.LCIDToLocaleName(lcid, buf, bufSize, dwFlags)
-    writer.writeLog(logFile, 'Regional and language options : ' + buf.value + '\n')
+    writer.writeLog(logFile, 'Regional and language options : ' + buf.value + '<br>\n')
     
     # Time zone
-    writer.writeLog(logFile, 'Time zone : ' + time.tzname[0] + '\n')
-    writer.writeLog(logFile, delimiter + '\n')
+    writer.writeLog(logFile, 'Time zone : ' + time.tzname[0] + '<br>\n')
+    writer.writeLog(logFile, delimiter + '<br>\n')
     
     # Owner
-    writer.writeLog(logFile, 'Registered Organization : ' + dictToSave.get('RegisteredOrganization') + '\n')
-    writer.writeLog(logFile, 'Registered Owner : ' + dictToSave.get('RegisteredOwner') + '\n')
-    writer.writeLog(logFile, delimiter + '\n')
+    writer.writeLog(logFile, 'Registered Organization : ' + dictToSave.get('RegisteredOrganization') + '<br>\n')
+    writer.writeLog(logFile, 'Registered Owner : ' + dictToSave.get('RegisteredOwner') + '<br>\n')
+    writer.writeLog(logFile, delimiter + '<br>\n')
     
     # Computer model/brand
     strComputer = "."
@@ -404,99 +424,113 @@ def systemInfo(logFile):
     objSWbemServices = objWMIService.ConnectServer(strComputer, 'root\cimv2')
     colItems = objSWbemServices.ExecQuery('SELECT * FROM Win32_ComputerSystem')
     for objItem in colItems:
-        writer.writeLog(logFile, 'Manufacturer : ' + objItem.Manufacturer + '\n')
+        writer.writeLog(logFile, 'Manufacturer : ' + objItem.Manufacturer + '<br>\n')
         try:
-            writer.writeLog(logFile, 'SystemFamily : ' + objItem.SystemFamily + '\n')
+            writer.writeLog(logFile, 'SystemFamily : ' + objItem.SystemFamily + '<br>\n')
         except AttributeError as e:
-            writer.writeLog(logFile, 'SystemFamily : N/A\n')
-        writer.writeLog(logFile, 'Model : ' + objItem.Model + '\n')
-        writer.writeLog(logFile, 'Type : ' + objItem.SystemType + '\n')
-    writer.writeLog(logFile, delimiter + '\n')
+            writer.writeLog(logFile, 'SystemFamily : N/A<br>\n')
+        writer.writeLog(logFile, 'Model : ' + objItem.Model + '<br>\n')
+        writer.writeLog(logFile, 'Type : ' + objItem.SystemType + '<br>\n')
+    writer.writeLog(logFile, delimiter + '<br>\n')
 
     # Processor
     colItems = objSWbemServices.ExecQuery('Select * from Win32_Processor')
     for objItem in colItems:
-        writer.writeLog(logFile, 'Processor : ' + objItem.Name + '\n')
-        writer.writeLog(logFile, 'Core : ' + str(objItem.NumberOfCores) + '\n')
-        writer.writeLog(logFile, 'Logical core : ' + str(objItem.NumberOfLogicalProcessors) + '\n')
+        writer.writeLog(logFile, 'Processor : ' + objItem.Name + '<br>\n')
+        writer.writeLog(logFile, 'Core : ' + str(objItem.NumberOfCores) + '<br>\n')
+        writer.writeLog(logFile, 'Logical core : ' + str(objItem.NumberOfLogicalProcessors) + '<br>\n')
         try:
-            writer.writeLog(logFile, 'Virtualization enabled : ' + str(objItem.VirtualizationFirmwareEnabled) + '\n')
+            writer.writeLog(logFile, 'Virtualization enabled : ' + str(objItem.VirtualizationFirmwareEnabled) + '<br>\n')
         except AttributeError as e:
-            writer.writeLog(logFile, 'Virtualization enabled : N/A\n')
-    writer.writeLog(logFile, delimiter + '\n')
+            writer.writeLog(logFile, 'Virtualization enabled : N/A<br>\n')
+    writer.writeLog(logFile, delimiter + '<br>\n')
     
     # Bios
     colItems = objSWbemServices.ExecQuery("SELECT * FROM Win32_BIOS")
     for objItem in colItems:
-        writer.writeLog(logFile, "BIOS Version : " + str(objItem.BIOSVersion) + '\n')
-        writer.writeLog(logFile, "Release Date : " + str(datetime.strptime(str(objItem.ReleaseDate[:8]), "%Y%m%d").strftime("%Y-%m-%d")) + '\n')
-    writer.writeLog(logFile, delimiter + '\n')
+        writer.writeLog(logFile, "BIOS Version : " + str(objItem.BIOSVersion) + '<br>\n')
+        writer.writeLog(logFile, "Release Date : " + str(datetime.strptime(str(objItem.ReleaseDate[:8]), "%Y%m%d").strftime("%Y-%m-%d")) + '<br>\n')
+    writer.writeLog(logFile, delimiter + '<br>\n')
 
     # Memory
     mem = psutil.virtual_memory()
-    writer.writeLog(logFile, 'Total memory : ' + str(mem.total >> 20) + ' Mo\n')
-    writer.writeLog(logFile, 'Available memory : ' + str(mem.available >> 20) + ' Mo\n')
-    writer.writeLog(logFile, 'Used memory : ' + str(mem.used >> 20) + ' Mo (' + str(mem.percent) + ' %)\n')
-    writer.writeLog(logFile, 'Free memory : ' + str(mem.free >> 20) + ' Mo\n')
-    writer.writeLog(logFile, delimiter + '\n')
+    writer.writeLog(logFile, 'Total memory : ' + str(mem.total >> 20) + ' Mo<br>\n')
+    writer.writeLog(logFile, 'Available memory : ' + str(mem.available >> 20) + ' Mo<br>\n')
+    writer.writeLog(logFile, 'Used memory : ' + str(mem.used >> 20) + ' Mo (' + str(mem.percent) + ' %)<br>\n')
+    writer.writeLog(logFile, 'Free memory : ' + str(mem.free >> 20) + ' Mo<br>\n')
+    writer.writeLog(logFile, delimiter + '<br>\n')
     
     # Domaine
-    writer.writeLog(logFile, "Domain : " + os.environ['userdomain'] + '\n')
-    writer.writeLog(logFile, delimiter + '\n')
+    writer.writeLog(logFile, "Domain : " + os.environ['userdomain'] + '<br>\n')
+    writer.writeLog(logFile, delimiter + '<br>\n')
     
     #Network interfaces
     network_interface = psutil.net_if_addrs()
-    # print(str(len(network_interface)) + ' network interface(s) found\n')
-    writer.writeLog(logFile, str(len(network_interface)) + ' network interfaces found :\n')
-    i = 1
+    writer.writeLog(logFile, str(len(network_interface)) + ' network interfaces found :<br>\n')
+    # i = 1
+    networkDict = {}
     for k, v in network_interface.items():
-        # print('[' + str(i) + '] : ' + k)
-        writer.writeLog(logFile, '[' + str(i) + '] : ' + k + '\n')
+        macaddr = ''
+        ipv4 = ''
+        ipv6 = ''
         for items in v:
-            regex = re.findall("address='(.*?)'", str(items))[0]
-            # print(regex)
-            writer.writeLog(logFile, regex + '\n')
-        # print('\n')
-        writer.writeLog(logFile, '\n')
-        i+=1
-    writer.writeLog(logFile, delimiter + '\n')
+            #Getting MAC addr, ipv4 addr and ipv6 addr
+            if str(items.family) == 'AddressFamily.AF_LINK':
+                macaddr = items.address
+            if str(items.family) == 'AddressFamily.AF_INET':
+                ipv4 = items.address
+            if str(items.family) == 'AddressFamily.AF_INET6':
+                ipv6 = items.address
+            networkDict[k] = {'Name':k, 'MAC':macaddr, 'IpV4':ipv4, 'IpV6':ipv6}
+    # Ecriture du fichier CSV 
+    header = ['Name', 'MAC', 'IpV4', 'IpV6']
+    csvFile = logFilePath + "networkInterfaces.csv"
+    writer.writeCSV(csvFile, header, networkDict)
+    # Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Network Interfaces')
+    # Ecriture sur le log
+    writer.writeLog(logFile, htmltxt)
+    writer.writeLog(logFile, delimiter + '<br>\n')
     
     # Drives
     drives = psutil.disk_partitions()
-    # print(str(len(drives)) + ' drive(s) found\n')
-    writer.writeLog(logFile, str(len(drives)) + ' drive(s) found :\n')
-    # print(drives)
-    i = 1
+    drivesDict = {}
     for drive in drives:
         drivePath = re.findall("device='(.*?)'", str(drive))[0]
-        # print('[' + str(i) + '] : ' + drivePath)
-        writer.writeLog(logFile, '[' + str(i) + '] : ' + drivePath + '\n')
-        # print(str(psutil.disk_usage(drivePath)) + '\n')
-        # print('opts', drive.opts)
-        # print('fstype', drive.fstype)
         if drive.opts != 'cdrom':
             try:
                 diskUsage = psutil.disk_usage(drivePath)
-                writer.writeLog(logFile, 'Total space : ' + str(diskUsage.total >> 30) + ' Go\n')
-                writer.writeLog(logFile, 'Free space : ' + str(diskUsage.free >> 30) + ' Go\n')
-                writer.writeLog(logFile, 'Used space : ' + str(diskUsage.used >> 30) + ' Go (' + str(diskUsage.percent) + ' %)\n')
+                drivesDict[str(drivePath)] = {'Path':str(drivePath), 
+                                        'Total_Space (Go)':str(diskUsage.total >> 30),
+                                        'Free_Space (Go)':str(diskUsage.free >> 30),
+                                        'Used_space (Go)':str(diskUsage.used >> 30),
+                                        'Used_space (%)':str(diskUsage.percent)}
             except Exception:
                 pass
-        i+=1
-    writer.writeLog(logFile, delimiter + '\n')
+    # Ecriture du fichier CSV 
+    header = ['Path', 'Total_Space (Go)', 'Free_Space (Go)', 'Used_space (Go)', 'Used_space (%)']
+    csvFile = logFilePath + "drives.csv"
+    writer.writeCSV(csvFile, header, drivesDict)
+    # Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Drives')
+    # Ecriture sur le log
+    writer.writeLog(logFile, str(len(drivesDict)) + ' drive(s) found :<br>\n')
+    writer.writeLog(logFile, htmltxt)
+    writer.writeLog(logFile, delimiter + '<br>\n')
     
     # Firewalls
     XPFW = win32com.client.gencache.EnsureDispatch('HNetCfg.FwMgr', 0)
     XPFW_policy = XPFW.LocalPolicy.CurrentProfile
-    writer.writeLog(logFile, 'Firewall enabled : ' + str(XPFW_policy.FirewallEnabled) + '\n')
+    writer.writeLog(logFile, 'Firewall enabled : ' + str(XPFW_policy.FirewallEnabled) + '<br>\n')
 
     # 3 - Ecriture fin de log
     elem = "------------------- System informations listing ended -------------------"
     writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, '\n</div>\n')
 
     return logFile
 
-def processInfo(logFile):
+def processInfo(logFilePath):
     '''
     ~ tasklist /SVC
     ***FR**
@@ -508,34 +542,39 @@ def processInfo(logFile):
     '''
     writer.write('Getting running processes')
     # 1 - Ecriture début de log
-    # logFile = str(logFilePath)+"TEMP_proc.txt"
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
     elem = "***Running processes on computer ''" + computername + "''***"
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des processus démarrés
-    i = 1
-    procList = []
+    # i = 1
+    procDict = {}
     for proc in psutil.process_iter():
         try:
-            procList.append('[' + str(i) + '] ' + 
-                            str(proc.name()) + ' ::: ' + 
-                            str(proc.pid) + '\n')
-            i+=1
+            procDict[str(proc.name())] = {'Name':str(proc.name()), 'PID':str(proc.pid)}
+            # i+=1
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
             
-    # 3 - Ecrire la liste sur le log
-    writer.writeLog(logFile, str(len(procList)) + ' running processes :\n')
-    for elem in procList:
-        writer.writeLog(logFile, str(elem))
+    # 3 - Ecrire du fichier CSV
+    header = ['Name', 'PID']
+    csvFile = logFilePath + "processes.csv"
+    writer.writeCSV(csvFile, header, procDict)
+    
+    # 4 - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Running processes')
 
-    # 4 - Ecriture de la fin du log
+    # 5 - Ecriture de la fin du log
+    writer.writeLog(logFile, str(len(procDict)) + ' running processes :\n')
+    writer.writeLog(logFile, htmltxt)
     elem = "------------------- Running processes listing finished -------------------"
     writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, '\n</div>\n')
 
-    return procList
+    return procDict
 
-def servicesInfo(logFile):
+def servicesInfo(logFilePath):
     '''
     ~ wmic service where started=true get name, startname
     **FR**
@@ -547,43 +586,42 @@ def servicesInfo(logFile):
     '''
     writer.write('Getting running services')
     # 1 - Ecriture début de log   
-    # logFile = logFilePath + "TEMP_services.txt"
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
     elem = "***Running services on computer ''" + computername + "''***"
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des services démarrés
     servicesList = psutil.win_service_iter()
-    servicesListName = []
-    servicesListRunning = []
-    i = 1
+    servicesDictRunning = {}
     for srv in servicesList:
         srvname = re.findall("name='(.*)',", str(srv))[0]
         serviceTemp = psutil.win_service_get(srvname)
         service = serviceTemp.as_dict()
-        # Remove description
-        del service['description']
         # Keep running services
         if service['status'] == 'running':
-            # print('[' + str(i) + ']')
-            # print(service)
-            servicesListName.append(str(service['name']))
-            servicesListRunning.append('[' + str(i) + ']' + '\n')
-            for k, v in service.items():
-                servicesListRunning.append(str(k) + ':' + str(v) + '\n')
-            i+=1
+            servicesDictRunning[service['name']] = {'Name':service['name'], 'PID':service['pid'],
+                                'Display_Name':service['display_name'], 'Start_Type':service['start_type'],
+                                'Username':service['username'], 'Binpath':service['binpath']}
 
-    # 3 - Ecrire la liste sur le log
-    writer.writeLog(logFile, str(i - 1) + ' running services :\n')
-    for elem in servicesListRunning:
-        writer.writeLog(logFile, str(elem))
+    # 3 - Ecriture du fichier CSV
+    header = ['Name', 'Display_Name', 'PID', 'Start_Type', 'Username', 'Binpath']
+    csvFile = logFilePath + "services.csv"
+    writer.writeCSV(csvFile, header, servicesDictRunning)
+    
+    # 4 - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Running services')
 
-    # 4 - Ecriture de la fin du log
+    # 5 - Ecriture de la fin du log
+    writer.writeLog(logFile, str(len(servicesDictRunning)) + ' running services :<br>\n')
+    writer.writeLog(logFile, htmltxt)
     elem = "------------------- Running services listing finished -------------------"
     writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, '\n</div>\n')
 
-    return servicesListName
+    return servicesDictRunning
 
-def portsInfo(logFile):
+def portsInfo(logFilePath):
     '''
     ~ netstat -a
     **FR**
@@ -595,47 +633,56 @@ def portsInfo(logFile):
     '''
     writer.write('Getting network connections')
     # 1 - Ecriture début de log
-    # logFile = str(logFilePath) + "TEMP_ports.txt"
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
     elem = "***Informations about network connections of computer ''" + computername + "''***"
     writer.prepaLogScan(logFile, elem)
 
     # 2 - obtenir la liste des connexions actives
     portsList = psutil.net_connections()
-    writer.writeLog(logFile, str(len(portsList)) + ' network connections :\n')
-    i = 1
+    portsDict = {}
     for ports in portsList:
-        # if ports.status == 'ESTABLISHED' or ports.status == 'LISTEN':
-        # print('[' + str(i) + ']' + ' laddr:' + str(ports.laddr) 
-            # + '; raddr:' + str(ports.raddr) 
-            # + '; status:' + str(ports.status) 
-            # + '; pid:' + str(ports.pid))
-        writer.writeLog(logFile, '[' + str(i) + ']')
-        writer.writeLog(logFile, ' laddr:' + str(ports.laddr) 
-                        + '; raddr:' + str(ports.raddr) 
-                        + '; status:' + str(ports.status) 
-                        + '; pid:' + str(ports.pid) + '\n')
-        i+=1
+        if ports.status == 'ESTABLISHED' or ports.status == 'CLOSE_WAIT':
+            portsDict[str(ports.laddr)] = {'Local_addr':str(ports.laddr[0]), 'Local_port':str(ports.laddr[1]),
+                                        'Remote_addr':str(ports.raddr[0]), 'Remote_port':str(ports.raddr[1]),
+                                        'Status':str(ports.status), 'PID':str(ports.pid)}
 
-    # 3 - Ecriture de la fin du log
+        if ports.status == 'LISTEN':
+            portsDict[str(ports.laddr)] = {'Local_addr':str(ports.laddr[0]), 'Local_port':str(ports.laddr[1]),
+                                        'Remote_addr':'', 'Remote_port':'',
+                                        'Status':str(ports.status), 'PID':str(ports.pid)}
+
+    # 3 - Ecriture du fichier CSV
+    header = ['Local_addr', 'Local_port', 'Remote_addr', 'Remote_port', 'Status', 'PID']
+    csvFile = logFilePath + "ports.csv"
+    writer.writeCSV(csvFile, header, portsDict)
+    
+    # 4 - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Network connections')
+    
+    # 5 - Ecriture de la fin du log
+    writer.writeLog(logFile, str(len(portsDict)) + ' network connections :<br>\n')
+    writer.writeLog(logFile, htmltxt)
     elem = "------------------- Computer network connections listing finished -------------------"
     writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, '\n</div>\n')
 
-    return portsList
+    return portsDict
   
 if __name__ == '__main__':
     # softwareList = softwareInit()
     # softwareDict = searchSoftware(softwareList)
     # userInfo(r'E:\scanPC_dev_encours\TESTS\scans/')
-    # userInfo(r'C:\STOCKAGE\logScanPC\2019\4\7/')
+    # userInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
     # print(locale.getpreferredencoding())
     # usrfile = userInfo(r"E:\scanPC_dev_encours\TESTS\scans/")
     # pwdfile = pwdPolicy(r"E:\scanPC_dev_encours\TESTS\scans/")
-    # sFfile = sharedFolders(r"C:\STOCKAGE\logScanPC\2019\4\7/")
-    hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testhotfixes.txt")
+    # sFfile = sharedFolders(r"C:\STOCKAGE\logScanPC\2019\05\7/")
+    # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # systelInfofile = systemInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
-    # systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\04/')
-    # processfile = processInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testprocess.txt")
-    # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testservices.txt")
-    # portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\04\7/testports.txt")
+    systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
+    # processfile = processInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
+    # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
+    # portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     
 # mcAfeeLog = str(logFilePath)+"mcAfeeLog.txt"

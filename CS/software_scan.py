@@ -44,7 +44,7 @@ def reg(HIVE, thekey, value):
         winreg.CloseKey(registry_key)
     return value
     
-def softwareInit(logFile):
+def softwareInit(logFilePath):
     '''
     **FR**
     Initialisation et fonction principale de la recherche des logiciels
@@ -55,12 +55,12 @@ def softwareInit(logFile):
     writer.write(texte5)
 
     # 1 - Début de l'analyse des logiciels
-    # logSoftBegin = logFilePath + "begin_Soft.txt"
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
     elem = "***************************Software informations of computer ''" + computername + "''***************************"
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des logiels de l'ordinateur
-    # logfilesoft = str(logFilePath)+"TEMP_SOFTWARE.txt"
     regkey = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" #32 bits
     regkey2 = r"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall" #64 bits
     softwareList = softwareLst(regkey)
@@ -75,82 +75,21 @@ def softwareInit(logFile):
         if item not in finalDict.items():
             # print(item)
             finalDict.update({item:value})
-    # print(finalDict)
-    
-    # 4 - Vérification si première lettre des logiciels en majuscule
-    for item, value in finalDict.items():
-        if item[0].islower() == True:
-            newItem = item.title()
-            del finalDict[item]
-            finalDict[newItem] = value   
-    
-    # 5 - Tri des logiciels par ordre alphabétique + calcul pour création tableau
-    maxSoftName = 0 #Longueur colonne nom logiciel
-    maxLocationName = 0 #Longueur colonne path
-    maxPublisherName = 0 #Longueur colonne éditeur
-    maxVersionName = 0 #Longueur colonne version
 
-    for item, value in sorted(finalDict.items()):       
-        # Plus grand nom 
-        if len(item) > maxSoftName:
-            maxSoftName = len(item)
-        for valuename, subvalue in value.items():
-            #Plus grand path
-            if valuename == 'installLocation' and subvalue != None:
-                if len(subvalue) > maxLocationName: 
-                    maxLocationName = len(subvalue)
-            #Plus grand éditeur
-            if valuename == 'publisher' and subvalue != None:
-                if len(subvalue) > maxPublisherName: 
-                    maxPublisherName = len(subvalue)
-            #Plus grande version
-            if valuename == 'version' and subvalue != None:
-                if len(subvalue) > maxVersionName:
-                    maxVersionName = len(subvalue)
-   
-    # 6 - Ecriture dans un fichier sous forme de tableau
-    #Header du tableau
-    diffLogiciel = maxSoftName - len("Name")
-    logicielHeader = "Name" + " " * diffLogiciel + "|"
+    # 4 - Ecriture du fichier CSV
+    header = ['Name', 'Version', 'Publisher', 'Location']
+    csvFile = logFilePath + "software.csv"
+    writer.writeCSV(csvFile, header, finalDict)
     
-    diffPath = maxLocationName - len("Location")
-    pathHeader = "Location" + " " * diffPath + "|"
-   
-    diffEditor = maxPublisherName - len("Publisher")
-    editHeader = "Publisher" + " " * diffEditor + "|"
-    
-    diffVersion = maxVersionName - len("Version")
-    versionHeader = "Version" + " " * diffVersion + "|"
-    
-    header = logicielHeader + versionHeader + editHeader + pathHeader
-    limHeader = "_" * maxSoftName + "_" * maxLocationName + "_" * maxPublisherName + "_" * maxVersionName
-    
+    # 5 - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Installed software')
+
+    # 5 - Ecriture fin du log
     writer.writeLog(logFile, str(len(finalDict)) + ' software found :\n')
-    writer.writeLog(logFile, header + "\n" + limHeader +"\n")
-    
-    #Valeurs du tableau
-    for item, value in sorted(finalDict.items()):
-        diffLogiciel = maxSoftName - len(item)
-        logicielValue= item + " " * diffLogiciel + "|"
-        versionValue = " " * maxVersionName + "|"
-        editorValue = " " * maxPublisherName + "|"
-        pathValue = " " * maxLocationName + "|"
-        for valuename, subvalue in value.items():
-            if valuename == 'installLocation' and subvalue != None:
-                diffPath = maxLocationName - len(subvalue)
-                pathValue= subvalue + " " * diffPath + "|"
-            if valuename == 'publisher' and subvalue != None:
-                diffEditor = maxPublisherName - len(subvalue)
-                editorValue= subvalue + " " * diffEditor + "|"
-            if valuename == 'version' and subvalue != None:
-                diffVersion = maxVersionName - len(subvalue)
-                versionValue = subvalue + " " * diffVersion + "|"
-        all = logicielValue + versionValue + editorValue + pathValue
-        writer.writeLog(logFile, all + '\n')
-
-    # 7 - Ecriture de la fin du log
+    writer.writeLog(logFile, htmltxt)
     elem = '-' * 25 + ' Software scanning ended ' + '-' * 25
     writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, '\n</div>\n')
     texte5bis = "Software scanning ended.\n"
     writer.write(texte5bis)
 
@@ -222,14 +161,17 @@ def searchSoftware(software, thekey):
             # print(nameSoft)
             # Conditions : some software does not have version & avoid Microsoft Updates
             if nameSoft != None and nameSoft != '' and 'Update for' not in nameSoft and publisherSoft != None:
-                # print(nameSoft)
+                # print(nameSoft.title())
                 # print(versionSoft)
                 # print(publisherSoft)
-                softwareDict[nameSoft] = {'version':versionSoft,'publisher':publisherSoft, 'installLocation':pathSoft}
+                softwareDict[nameSoft.title()] = {'Name':nameSoft.title(),
+                                                'Version':versionSoft,
+                                                'Publisher':publisherSoft,
+                                                'Location':pathSoft}
         # print(softwareDict)
     except TypeError:
         pass
     return softwareDict
   
 if __name__ == '__main__':
-    softwareInit(r"<PATH>")
+    softwareInit(r"C:\STOCKAGE\logScanPC\2019\05\6/")

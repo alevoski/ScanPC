@@ -38,7 +38,7 @@ def getMcAfee():
     keySrvLst = r"SOFTWARE\WOW6432Node\Network Associates\ePolicy Orchestrator\Agent"
     epoLst = "ePOServerList"
     srvList = reg(hive, keySrvLst, epoLst)
-    lstmsg = "`\n--EPO servers list--\n"
+    lstmsg = "`\n--EPO servers list--<br>"
     # print("{d[2]}/{d[1]}/{d[0]} ({v})".format(d=date,v=version))
     return "Date & version : {d[2]}/{d[1]}/{d[0]} ({v})".format(d=date,v=version), lstmsg + srvList.replace(';', '\n')
 
