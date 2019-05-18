@@ -8,7 +8,24 @@ from sys import stdout
 from time import sleep
 import os
 import csv
+import shutil
 from cgi import escape
+
+def copyFile(source, destination):
+    '''
+    Copy a file (source) to a destination
+    '''
+    fileName = os.path.basename(source)
+    try:
+        shutil.copy2(source, destination)
+        if os.path.isfile(destination):
+            msg = "\n" + fileName + " has been copied !\n"
+            write(msg)
+        else:
+            raise IOError
+    except (IOError, PermissionError) as e:
+        msg = "\nUnable to copy " + fileName + " ! :\nPermission denied !"
+        write(msg)
 
 def prepaLogScan(logtowrite, elem):
     '''
@@ -67,7 +84,7 @@ def writeCSV(logFile, fieldnames, dictElement):
         writerCSV.writeheader()
         for elems, values in sorted(dictElement.items()):
             writerCSV.writerow(values)
-            
+
 def _row2tr(row, attr=None):
     '''
     **FR**
@@ -99,7 +116,7 @@ def csv2html(csvFile, summary):
     **EN**
     Transform a CSV file in an HTML table
     '''
-    htmltxt = '<TABLE border=1, summary="' + summary + '">\n'
+    htmltxt = '<TABLE summary="' + summary + '">\n'
     with open(csvFile, mode='r', encoding='utf-8-sig') as f:
         csvfile = f.read()
     for rownum, row in enumerate(csvfile.split('\n')):

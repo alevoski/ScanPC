@@ -3,6 +3,14 @@ Note : this project started in October 2016.
 Many improvements have been done since this date until August 2018.
 Then the project has been refreshed in March 2019 with major modifications, in a more pythonic way.
 
+13/05/2019 - 18/05/2019
+    CSS is now define in style.css file
+    software_scan module now shows if the software are up to date with sotware_list.json
+        ok in green if up to date
+        ko in red if not
+    hotFixesInfo() now only list security updates
+    systemInfo() now show more information about network interfaces (DNS, Default Gateway, Adapter enabled, ...)
+
 06/05/2019 - 12/05/2019
     Log is now generated in HTML along multiple CSV files resulting of the various scans
     Many scans are now displayed in an HTML table

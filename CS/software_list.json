@@ -1,0 +1,256 @@
+{
+    "software":[
+        {
+            "name":"Adobe Acrobat Reader",
+            "last_version":"19.012.20034",
+            "last_update":"2019/05/14",
+            "release_note":"https://helpx.adobe.com/acrobat/release-note/release-notes-acrobat-reader.html"
+        },
+        {
+            "name":"Adobe Shockwave Player",
+            "last_version":"12.3.5.205",
+            "last_update":"2019/04/01",
+            "release_note":"https://helpx.adobe.com/shockwave/release-note/release-notes-shockwave-12.html"
+        },
+        {
+            "name":"7-zip",
+            "last_version":"19.00",
+            "last_update":"2019/02/21",
+            "release_note":"https://www.7-zip.org/history.txt"
+        },
+        {
+            "name":"Java Se Development Kit",
+            "last_version":"12.0.1",
+            "last_update":"2019/04/16",
+            "release_note":"https://www.oracle.com/technetwork/java/javase/jdk-relnotes-index-2162236.html"
+        },
+        {
+            "name":"Java",
+            "last_version":"8.0.211",
+            "last_update":"2019/04/16",
+            "release_note":"https://java.com/en/download/faq/release_changes.xml"
+        },
+        {
+            "name":"Lotus Notes",
+            "last_version":"10.0.1",
+            "last_update":"2019/03/30",
+            "release_note":"https://www-01.ibm.com/support/docview.wss?uid=swg27010592"
+        },
+        {
+            "name":"IBM Notes",
+            "last_version":"10.0.1",
+            "last_update":"2019/03/30",
+            "release_note":"https://www-01.ibm.com/support/docview.wss?uid=swg27010592"
+        },
+        {
+            "name":"Lotus Domino",
+            "last_version":"10.0.1",
+            "last_update":"2019/03/30",
+            "release_note":"https://www-01.ibm.com/support/docview.wss?uid=swg27010592"
+        },
+        {
+            "name":"IBM Domino",
+            "last_version":"10.0.1",
+            "last_update":"2019/03/30",
+            "release_note":"https://www-01.ibm.com/support/docview.wss?uid=swg27010592"
+        },
+        {
+            "name":"Symantec Endpoint Protection",
+            "last_version":"14.2.3332.1000",
+            "last_update":"2019/04/23",
+            "release_note":"https://support.symantec.com/en_US/article.HOWTO124730.html"
+        },
+        {
+            "name":"VMware Workstation",
+            "last_version":"15.1.0",
+            "last_update":"2019/05/14",
+            "release_note":"https://docs.vmware.com/en/VMware-Workstation-Player/15/rn/VMware-Workstation-151-Player-Release-Notes.html"
+        },
+        {
+            "name":"Virtviewer",
+            "last_version":"8.0.256",
+            "last_update":"2019/03/01",
+            "release_note":"https://pagure.io/virt-viewer/blob/master/f/NEWS"
+        },
+        {
+            "name":"Lenovo Power Management Driver",
+            "last_version":"1.67.16.20",
+            "last_update":"2019/02/26",
+            "release_note":"https://support.lenovo.com/fr/fr/downloads/ds505267"
+        },
+        {
+            "name":"KeePass Password Safe 2",
+            "last_version":"2.42.1",
+            "last_update":"2019/05/01",
+            "release_note":"https://keepass.info/news/news_all.html"
+        },
+        {
+            "name":"KeePass Password Safe 1",
+            "last_version":"1.37",
+            "last_update":"2019/01/02",
+            "release_note":"https://keepass.info/news/news_all.html"
+        },
+        {
+            "name":"Vlc Media Player",
+            "last_version":"3.0.6",
+            "last_update":"2019/01/12",
+            "release_note":"https://www.videolan.org/news.html"
+        },
+        {
+            "name":"Oracle Vm Virtualbox",
+            "last_version":"6.0.8",
+            "last_update":"2019/05/13",
+            "release_note":"https://www.virtualbox.org/wiki/Changelog"
+        },
+        {
+            "name":"Android Studio",
+            "last_version":"3.4.1",
+            "last_update":"2019/05/15",
+            "release_note":"https://developer.android.com/studio/releases"
+        },
+        {
+            "name":"Audacity",
+            "last_version":"2.3.2",
+            "last_update":"2019/05/13",
+            "release_note":"https://wiki.audacityteam.org/wiki/Audacity_Versions"
+        },
+        {
+            "name":"Cisco Packet Tracer",
+            "last_version":"7.2.1",
+            "last_update":"2019/03/17",
+            "release_note":"https://www.packettracernetwork.com/"
+        },
+        {
+            "name":"Cpuid Cpu-Z",
+            "last_version":"1.88",
+            "last_update":"2019/03/28",
+            "release_note":"https://www.cpuid.com/softwares/cpu-z.html#version-history"
+        },
+        {
+            "name":"Crystaldiskinfo",
+            "last_version":"8.1.0",
+            "last_update":"2019/04/22",
+            "release_note":"https://crystalmark.info/en/software/crystaldiskinfo/crystaldiskinfo-history/"
+        },
+        {
+            "name":"Crystaldiskmark",
+            "last_version":"6.0.2",
+            "last_update":"2018/10/21",
+            "release_note":"https://crystalmark.info/en/software/crystaldiskmark/crystaldiskmark-history/"
+        },
+        {
+            "name":"Dev-C++",
+            "last_version":"5.11",
+            "last_update":"2015/04/27",
+            "release_note":"http://orwelldevcpp.blogspot.com/"
+        },
+        {
+            "name":"Eraser",
+            "last_version":"6.2.2982",
+            "last_update":"2018/01/12",
+            "release_note":"https://eraser.heidi.ie/download/"
+        },
+        {
+            "name":"Freeplane",
+            "last_version":"1.7.7",
+            "last_update":"2019/03/10",
+            "release_note":"https://sourceforge.net/projects/freeplane/files/freeplane%20stable/"
+        },
+        {
+            "name":"Google Chrome",
+            "last_version":"74.0.3729.157",
+            "last_update":"2019/05/14",
+            "release_note":"https://chromereleases.googleblog.com/"
+        },
+        {
+            "name":"Libreoffice",
+            "last_version":"6.1.6",
+            "last_update":"2019/05/07",
+            "release_note":"https://www.libreoffice.org/download/release-notes/#Still"
+        },
+        {
+            "name":"Malwarebytes",
+            "last_version":"3.7.1",
+            "last_update":"2019/02/05",
+            "release_note":"https://support.malwarebytes.com/docs/DOC-2814"
+        },
+        {
+            "name":"Minitool Partition Wizard Professional",
+            "last_version":"11.0.1",
+            "last_update":"2019/01/29",
+            "release_note":"https://www.partitionwizard.com/upgrade-history.html"
+        },
+        {
+            "name":"Mozilla Firefox",
+            "last_version":"66.0.5",
+            "last_update":"2019/05/07",
+            "release_note":"https://www.mozilla.org/en-US/firefox/releases/"
+        },
+        {
+            "name":"Netbeans Ide",
+            "last_version":"8.2",
+            "last_update":"2016/10/03",
+            "release_note":"https://netbeans.org/community/releases/roadmap.html"
+        },
+        {
+            "name":"Node.Js",
+            "last_version":"12.2.0",
+            "last_update":"2019/05/07",
+            "release_note":"https://nodejs.org/en/download/releases/"
+        },
+        {
+            "name":"Notepad++",
+            "last_version":"7.6.6",
+            "last_update":"2019/04/04",
+            "release_note":"https://notepad-plus-plus.org/news/"
+        },
+        {
+            "name":"Ntlite",
+            "last_version":"1.8.0.6930",
+            "last_update":"2019/05/14",
+            "release_note":"https://www.ntlite.com/changelog/"
+        },
+        {
+            "name":"Putty",
+            "last_version":"0.71",
+            "last_update":"2019/03/16",
+            "release_note":"https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html"
+        },
+        {
+            "name":"Sumatrapdf",
+            "last_version":"3.1.2",
+            "last_update":"2016/08/14",
+            "release_note":"https://www.sumatrapdfreader.org/news.html"
+        },
+        {
+            "name":"Wampserver",
+            "last_version":"3.1.9",
+            "last_update":"2019/05/13",
+            "release_note":"http://wampserver.aviatechno.net/"
+        },
+        {
+            "name":"Wampserver64",
+            "last_version":"3.1.9",
+            "last_update":"2019/05/13",
+            "release_note":"http://wampserver.aviatechno.net/"
+        },
+        {
+            "name":"Winscp",
+            "last_version":"5.15.1",
+            "last_update":"2019/04/11",
+            "release_note":"https://winscp.net/eng/docs/history"
+        },
+        {
+            "name":"Wireshark 2",
+            "last_version":"2.6.8",
+            "last_update":"2019/04/08",
+            "release_note":"https://www.wireshark.org/docs/relnotes/"
+        },
+        {
+            "name":"Wireshark 3",
+            "last_version":"3.0.1",
+            "last_update":"2019/04/08",
+            "release_note":"https://www.wireshark.org/docs/relnotes/"
+        }
+    ]
+}

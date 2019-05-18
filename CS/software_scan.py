@@ -6,12 +6,15 @@
 #Standard imports
 import winreg
 import os
+import json
+import re
 
 #Project modules imports
 import writer
 
 hive = winreg.HKEY_LOCAL_MACHINE
 computername = os.environ['COMPUTERNAME']
+otherSoftLst = ['Java Auto Updater']
 
 def reg(HIVE, thekey, value):
     '''
@@ -77,14 +80,20 @@ def softwareInit(logFilePath):
             finalDict.update({item:value})
 
     # 4 - Ecriture du fichier CSV
-    header = ['Name', 'Version', 'Publisher', 'Location']
+    header = ['Name', 'Version', 'Last Update', 'Last Version', 'Up to date', 'Publisher', 'Location']
     csvFile = logFilePath + "software.csv"
     writer.writeCSV(csvFile, header, finalDict)
     
     # 5 - Transformation du CSV en HTML
     htmltxt = writer.csv2html(csvFile, 'Installed software')
 
-    # 5 - Ecriture fin du log
+    # 6 - Placer des id sur certains tags du tableau
+    # htmltxt = writer.modHTML(htmltxt, '<TD>ko</TD>', '<TD id="ko">ko</TD>')
+    htmltxt = htmltxt.replace('<TD>ko</TD>', '<TD id="ko">ko</TD>')
+    # htmltxt = writer.modHTML(htmltxt, '<TD>ok</TD>', '<TD id="ok">ok</TD>')
+    htmltxt = htmltxt.replace('<TD>ok</TD>', '<TD id="ok">ok</TD>')
+    
+    # 6 - Ecriture fin du log
     writer.writeLog(logFile, str(len(finalDict)) + ' software found :\n')
     writer.writeLog(logFile, htmltxt)
     elem = '-' * 25 + ' Software scanning ended ' + '-' * 25
@@ -133,6 +142,46 @@ def softwareLst(thekey):
         # print(software)
     return software
 
+def isUptodate(nameSoft, versionSoft):
+    '''
+    Compare version of the installed software with the last version known in software_list.json
+    Return 'ok' if the software is up to date or 'ko' if not
+    Return also the last known update and the last known version
+    '''
+    #Voir si les logiciels sont à jour
+    #open json software list
+    softwareList = os.getcwd() + '/software_list.json'
+    with open(softwareList, mode='r', encoding='utf-8') as f:
+         data = json.load(f)
+    #compare software version in the json list with the dict
+    for soft in data['software']:
+        #match software
+        if soft['name'].lower() in nameSoft[:len(soft['name'])].lower():
+            lastUpdate = soft['last_update']
+            lastVersion = soft['last_version']
+            #match version
+            if soft['last_version'] in versionSoft:
+                stat = 'ok'
+                break
+            else:
+                stat = 'ko'
+                break
+        else:
+            stat = ''
+            lastUpdate = ''
+            lastVersion = ''
+    return stat, lastUpdate, lastVersion
+    
+def searchVersionInName(nameSoft):
+    '''
+    Search and return a version number from a software name
+    '''
+    try:
+        # print(str(re.findall("(\d{0,2}(\.\d{1,2}).*)", nameSoft)[0][0]))
+        return str(re.findall("(\d{0,2}(\.\d{1,2}).*)", nameSoft)[0][0])
+    except IndexError:
+        return ''
+    
 def searchSoftware(software, thekey):
     '''
     **FR**
@@ -150,28 +199,33 @@ def searchSoftware(software, thekey):
     softwareDict = {}
     try:
         for soft in software:
-            # print(soft)
             softkey = thekey+'\\'+soft
-            # print(softkey) # test ok
-            # try:
             nameSoft = reg(hive, softkey, name)
             versionSoft = reg(hive, softkey, version)
             publisherSoft = reg(hive, softkey, publisher)
             pathSoft = reg(hive, softkey, path)
-            # print(nameSoft)
             # Conditions : some software does not have version & avoid Microsoft Updates
             if nameSoft != None and nameSoft != '' and 'Update for' not in nameSoft and publisherSoft != None:
-                # print(nameSoft.title())
-                # print(versionSoft)
-                # print(publisherSoft)
+                # Is version empty then look for it in name
+                if versionSoft == None:
+                    versionSoft = searchVersionInName(nameSoft)
+                # Is software up to date ?
+                stat = ''
+                lastUpdate = ''
+                lastVersion = ''
+                if nameSoft not in otherSoftLst: #do nothing if software is in otherSoftLst
+                    stat, lastUpdate, lastVersion = isUptodate(nameSoft, versionSoft)
+                # Write in dict
                 softwareDict[nameSoft.title()] = {'Name':nameSoft.title(),
-                                                'Version':versionSoft,
-                                                'Publisher':publisherSoft,
-                                                'Location':pathSoft}
-        # print(softwareDict)
+                                            'Version':versionSoft,
+                                            'Last Update':lastUpdate,
+                                            'Last Version':lastVersion,
+                                            'Up to date':stat,
+                                            'Publisher':publisherSoft,
+                                            'Location':pathSoft}
     except TypeError:
         pass
     return softwareDict
   
 if __name__ == '__main__':
-    softwareInit(r"C:\STOCKAGE\logScanPC\2019\05\6/")
+    softwareInit(r"C:\STOCKAGE\logScanPC\2019\05\7/")

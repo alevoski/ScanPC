@@ -6,7 +6,6 @@
 #Standard imports
 import os
 import time
-import shutil
 import webbrowser
 from datetime import datetime
 
@@ -19,6 +18,7 @@ import software_scan
 import complement
 
 computername = os.environ['COMPUTERNAME']
+styleCssFile = os.getcwd() + '/style.css'
 
 def scanPart():
     ''' 
@@ -56,6 +56,7 @@ def scanPc(key, logFilePath):
         <head>
             <title>ScanPC result</title>
             <meta charset="utf-8">
+            <link rel="stylesheet" type="text/css" href="style.css">
         </head>
         <body>
             <p>
@@ -115,23 +116,20 @@ def readandcopy(concatenateBasesFiles1):
                 break
         if opened ==0:
             webbrowser.open(str(concatenateBasesFiles1))
-        
+
     # Copie de fichier vers un emplacement défini
     msg0 = "\nDo you want a copy the scan report on the computer (C:\ drive) ? (y = yes, n = no)\n"
     writer.write(msg0)
     if ask_dismount.reponse() == 'y':
+        #Copy log
         fileName = os.path.basename(concatenateBasesFiles1)
-        fileToWrite = "C:/"+fileName
-        try:
-            shutil.copy2(concatenateBasesFiles1, fileToWrite)
-            if os.path.isfile(fileToWrite):
-                msg = "\n"+fileName+" has been copied on C:\\ !\n"
-                writer.write(msg)
-            else:
-                raise IOError
-        except (IOError, PermissionError) as e:
-            msg = "\nUnable to copy " + fileName + " on C:\\ ! :\nPermission denied !"
-            writer.write(msg)
+        fileToWrite = "C:/" + fileName
+        writer.copyFile(concatenateBasesFiles1, fileToWrite)
+        #Copy CSS file
+        if os.path.isfile(styleCssFile):
+            fileName = os.path.basename(styleCssFile)
+            fileToWrite = "C:/" + fileName
+            writer.copyFile(styleCssFile, fileToWrite)
 
 def fin(key):
     '''
@@ -191,6 +189,12 @@ while True:
             </body>
         </html>"""
         writer.writeLog(logFile, elementRaw)
+        
+        #copy css file in the log directory
+        if os.path.isfile(styleCssFile):
+            fileName = os.path.basename(styleCssFile)
+            fileToWrite = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/') + uniqueDir + '/'  + fileName
+            writer.copyFile(styleCssFile, fileToWrite)
 
         #Fin du programme
         readandcopy(logFile)

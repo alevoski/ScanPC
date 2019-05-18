@@ -283,24 +283,24 @@ def hotFixesInfo(logFilePath):
     https://www.activexperts.com/admin/scripts/wmi/python/0417/
     ~ wmic qfe get HotfixID,InstalledOn | more
     **FR**
-    Liste les patchs Windows installés
+    Liste les patchs de sécurité Windows installés
     Retourne le log généré
     **EN**
-    List Windows updates installed
+    List Windows security updates installed
     Return generated log
     '''
-    writer.write('Getting Windows updates')
+    writer.write('Getting Windows security updates')
     # 1 - Ecriture début de log
     logFile = logFilePath + "final.html"
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "**** Windows updates of computer ''" + computername + "''****"
+    elem = "**** Windows security updates of computer ''" + computername + "''****"
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des correctifs de l'ordinateur
     strComputer = "."
     objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
     objSWbemServices = objWMIService.ConnectServer(strComputer,"root\cimv2")
-    colItems = objSWbemServices.ExecQuery("SELECT * FROM Win32_QuickFixEngineering")
+    colItems = objSWbemServices.ExecQuery("SELECT * FROM Win32_QuickFixEngineering WHERE Description='Security Update'")
     hotfixDict = {}
     for objItem in colItems:
         try:
@@ -320,7 +320,7 @@ def hotFixesInfo(logFilePath):
 
     # 5 - Ecriture fin de log
     writer.writeLog(logFile, htmltxt)
-    elem = "------------------- Windows updates listing ended -------------------"
+    elem = "------------------- Windows security updates listing ended -------------------"
     writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
@@ -465,25 +465,56 @@ def systemInfo(logFilePath):
     writer.writeLog(logFile, delimiter + '<br>\n')
     
     #Network interfaces
-    network_interface = psutil.net_if_addrs()
-    writer.writeLog(logFile, str(len(network_interface)) + ' network interfaces found :<br>\n')
-    # i = 1
+    strComputer = "."
+    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
+    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\cimv2")
+    colItems = objSWbemServices.ExecQuery("select * from Win32_NetworkAdapterConfiguration")
     networkDict = {}
-    for k, v in network_interface.items():
-        macaddr = ''
-        ipv4 = ''
-        ipv6 = ''
-        for items in v:
-            #Getting MAC addr, ipv4 addr and ipv6 addr
-            if str(items.family) == 'AddressFamily.AF_LINK':
-                macaddr = items.address
-            if str(items.family) == 'AddressFamily.AF_INET':
-                ipv4 = items.address
-            if str(items.family) == 'AddressFamily.AF_INET6':
-                ipv6 = items.address
-            networkDict[k] = {'Name':k, 'MAC':macaddr, 'IpV4':ipv4, 'IpV6':ipv6}
+    for objItem in colItems:
+        if objItem.MACAddress != None:
+            netCaption = re.findall("] (.*)", objItem.Caption)[0]
+            # print(netCaption, objItem.IPAddress)
+            try:
+                dnsSrv = '<br>'.join(objItem.DNSServerSearchOrder)
+            except TypeError:
+                dnsSrv = objItem.DNSServerSearchOrder
+            try:
+                ipv4 = objItem.IPAddress[0]
+            except IndexError:
+                ipv4 = ''
+            except TypeError:
+                ipv4 = ''
+            try:
+                ipv6 = objItem.IPAddress[1]
+            except IndexError:
+                ipv6 = ''
+            except TypeError:
+                ipv6 = ''
+            try:
+                gw = ''.join(objItem.DefaultIPGateway)
+            except TypeError:
+                gw = objItem.DefaultIPGateway
+            try:
+                dhcpSrv = ''.join(objItem.DHCPServer)
+            except TypeError:
+                dhcpSrv = objItem.DHCPServer
+            networkDict[netCaption] = {'Name':netCaption,
+                    'MAC':objItem.MACAddress,
+                    'Enabled':objItem.IPEnabled,
+                    'IpV4':ipv4, 
+                    'IpV6':ipv6,
+                    'Default Gateway':gw,
+                    'DHCP Enabled':objItem.DHCPEnabled,
+                    'DHCP Server':dhcpSrv,
+                    'WINS Primary Server':objItem.WINSPrimaryServer,
+                    'WINS Secondary Server':objItem.WINSSecondaryServer,
+                    'DNS Domain':objItem.DNSDomain,
+                    'DNS Servers':dnsSrv}
+    writer.writeLog(logFile, str(len(networkDict)) + ' network interfaces found :<br>\n')
     # Ecriture du fichier CSV 
-    header = ['Name', 'MAC', 'IpV4', 'IpV6']
+    header = ['Name', 'MAC', 'Enabled', 'IpV4', 'IpV6', 'Default Gateway',
+            'DHCP Enabled', 'DHCP Server', 'WINS Primary Server',
+            'WINS Secondary Server', 'DNS Domain', 'DNS Servers']
     csvFile = logFilePath + "networkInterfaces.csv"
     writer.writeCSV(csvFile, header, networkDict)
     # Transformation du CSV en HTML
@@ -678,9 +709,9 @@ if __name__ == '__main__':
     # usrfile = userInfo(r"E:\scanPC_dev_encours\TESTS\scans/")
     # pwdfile = pwdPolicy(r"E:\scanPC_dev_encours\TESTS\scans/")
     # sFfile = sharedFolders(r"C:\STOCKAGE\logScanPC\2019\05\7/")
-    # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
+    hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # systelInfofile = systemInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
-    systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
+    # systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
     # processfile = processInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")

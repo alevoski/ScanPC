@@ -1,0 +1,11 @@
+#ok{
+    background-color:#009f00; /* rgb(0, 160, 0); */
+}
+
+#ko{
+    background-color:#bc2f00; /*rgb(188, 47, 0); */
+}
+
+table, th, td{
+    border: 1px solid black;
+}
