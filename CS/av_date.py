@@ -50,14 +50,10 @@ def getWsus():
     Ask regedit for WSUS informations
     '''
     hive = winreg.HKEY_LOCAL_MACHINE
-    
     keySrv = r"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
     srv = "WUServer"
-    
     srvWSUS = reg(hive, keySrv, srv)
-    lstmsg = "WSUS server : "
-    # print(srvWSUS)
-    return lstmsg + srvWSUS      
+    return srvWSUS
 
 if __name__ == '__main__':
     date, epoLst = getMcAfee()

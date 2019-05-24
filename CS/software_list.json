@@ -61,7 +61,7 @@
             "release_note":"https://support.symantec.com/en_US/article.HOWTO124730.html"
         },
         {
-            "name":"VMware Workstation",
+            "name":"VMware Player",
             "last_version":"15.1.0",
             "last_update":"2019/05/14",
             "release_note":"https://docs.vmware.com/en/VMware-Workstation-Player/15/rn/VMware-Workstation-151-Player-Release-Notes.html"

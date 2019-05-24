@@ -10,6 +10,7 @@ from datetime import datetime
 import platform
 import psutil
 import win32com.client
+from pywintypes import com_error
 import winreg
 import ctypes
 import time
@@ -40,6 +41,29 @@ userFlagsDict = {'SCRIPT':1,
                 'PASSWORD_EXPIRED':8388608,
                 'TRUSTED_TO_AUTH_FOR_DELEGATION':16777216,
                 'PARTIAL_SECRETS_ACCOUNT':67108864}
+                
+productStateDict = {'262144':{'defstatus':'Up to date','rtstatus':'Disabled'},
+                    '266240':{'defstatus':'Up to date','rtstatus':'Enabled'},
+                    '262160':{'defstatus':'Outdated','rtstatus':'Disabled'},
+                    '266256':{'defstatus':'Outdated','rtstatus':'Enabled'},
+                    # '270336'
+                    # '327680'
+                    # '327696'
+                    '331776':{'defstatus':'Up to date','rtstatus':'Enabled'},
+                    # '335872'
+                    # '344064'
+                    '393216':{'defstatus':'Up to date','rtstatus':'Disabled'},
+                    '393232':{'defstatus':'Outdated','rtstatus':'Disabled'},
+                    '393488':{'defstatus':'Outdated','rtstatus':'Disabled'},
+                    '397312':{'defstatus':'Up to date','rtstatus':'Enabled'},
+                    '397328':{'defstatus':'Outdated','rtstatus':'Enabled'},
+                    '393472':{'defstatus':'Up to date','rtstatus':'Disabled'},
+                    '397584':{'defstatus':'Outdated','$rtstatus':'Enabled'},
+                    '397568':{'defstatus':'Up to date','rtstatus':'Enabled'},
+                    # '458768'
+                    # '458752'
+                    '462864':{'defstatus':'Outdated','rtstatus':'Enabled'},
+                    '462848':{'defstatus':'Up to date','rtstatus':'Enabled'}}
 
 def detectOS():
     '''
@@ -146,7 +170,7 @@ def userInfo(logFilePath):
     # 3 - Ecriture début de log
     logFile = logFilePath + "final.html"
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "*******Getting details about the " + str(len(usrLstTEMP2)) + " user(s) of computer ''" + computername + "''*******"
+    elem = '<h2>Getting details about the ' + str(len(usrLstTEMP2)) + ' user(s) of computer "' + computername + '"</h2>'
     elem2 = "<br>Domain : " + str(domain) + '\n'
     writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, elem2)
@@ -158,13 +182,17 @@ def userInfo(logFilePath):
             objOU = win32com.client.GetObject("WinNT://" + domain + "/" + user + ",user")
             #User account
             fullname = str(objOU.Get('fullname'))
+            # print(fullname)
             try:
                 expirationDate = str(objOU.Get('AccountExpirationDate'))
             except Exception as e:
                 expirationDate = 'N/A'
             profile = str(objOU.Get('Profile'))
             loginScript = str(objOU.Get('LoginScript'))
-            lastLogin = str(objOU.Get('lastlogin'))
+            try:
+                lastLogin = str(objOU.Get('lastlogin'))
+            except com_error as e:
+                lastLogin = 'N/A'
             primaryGroupID = str(objOU.Get('PrimaryGroupID'))
             autoUnlockInterval = str(objOU.Get('AutoUnlockInterval'))
             lockoutObservationInterval = str(objOU.Get('LockoutObservationInterval'))
@@ -230,8 +258,6 @@ def userInfo(logFilePath):
         writer.writeLog(logFile, htmltxt)
 
     # 5 - Ecriture de la fin du log
-    elem = "----------------------- Users listing ended ------------------------"
-    writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
     return logFile
@@ -250,7 +276,7 @@ def sharedFolders(logFilePath):
     # 1 - Ecriture début de log
     logFile = logFilePath + "final.html"
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "**** Shared folders of computer ''" + computername + "''****"
+    elem = '<h2>Shared folders of computer "' + computername + '"</h2>'
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des dossiers partagés de l'ordinateur
@@ -272,8 +298,6 @@ def sharedFolders(logFilePath):
     writer.writeLog(logFile, htmltxt)
 
     # 5 - Ecriture de la fin du log
-    elem = "------------------- Shared folders listing ended -------------------"
-    writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
     return logFile
@@ -293,7 +317,7 @@ def hotFixesInfo(logFilePath):
     # 1 - Ecriture début de log
     logFile = logFilePath + "final.html"
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "**** Windows security updates of computer ''" + computername + "''****"
+    elem = '<h2>Windows security updates of computer "' + computername + '"</h2>'
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des correctifs de l'ordinateur
@@ -320,8 +344,6 @@ def hotFixesInfo(logFilePath):
 
     # 5 - Ecriture fin de log
     writer.writeLog(logFile, htmltxt)
-    elem = "------------------- Windows security updates listing ended -------------------"
-    writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
     return hotfixDict
@@ -330,12 +352,11 @@ def systemInfo(logFilePath):
     '''
     ~ systeminfo | find /V /I "hotfix" | find /V "KB"
     ~ wmic logicaldisk get volumename, description, FileSystem, Caption, ProviderName
-    ~ netsh advfirewall show all state        ||          netsh firewall show state
     **FR**
-    Scan le système (os, bios, cpu, ram, cartes réseaux, disques durs, parefeu, etc)
+    Scan le système (os, bios, cpu, ram, cartes réseaux, disques durs, etc)
     Retourne le log généré
     **EN**
-    Scan system (os, bios, cpu, ram, network interfaces, drives, firewall, etc)
+    Scan system (os, bios, cpu, ram, network interfaces, drives, etc)
     Return generated log
     '''
     writer.write('Getting system informations')
@@ -344,7 +365,7 @@ def systemInfo(logFilePath):
     # 1 - Ecriture début de log
     logFile = logFilePath + "final.html"
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "*************************** System information of computer ''" + computername + "''***************************"
+    elem = '<h2>System information of computer "' + computername + '"</h2>'
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Get information from regedit
@@ -548,18 +569,134 @@ def systemInfo(logFilePath):
     writer.writeLog(logFile, str(len(drivesDict)) + ' drive(s) found :<br>\n')
     writer.writeLog(logFile, htmltxt)
     writer.writeLog(logFile, delimiter + '<br>\n')
-    
-    # Firewalls
-    XPFW = win32com.client.gencache.EnsureDispatch('HNetCfg.FwMgr', 0)
-    XPFW_policy = XPFW.LocalPolicy.CurrentProfile
-    writer.writeLog(logFile, 'Firewall enabled : ' + str(XPFW_policy.FirewallEnabled) + '<br>\n')
 
     # 3 - Ecriture fin de log
-    elem = "------------------- System informations listing ended -------------------"
-    writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
     return logFile
+    
+def securityProductState(productStateDict, productState):
+    '''
+    **FR**
+    Retourne la signification du productState passé en paramètre
+    **EN**
+    Return productState meaning pasted in parameter
+    '''
+    rtstatus = 'Unknown'
+    defstatus = 'Unknown'
+    for keys, values in productStateDict.items():
+        if productState == keys:
+            rtstatus = values['rtstatus']
+            defstatus = values['defstatus']
+            break
+    return rtstatus, defstatus
+    
+def securityProductInfo(logFilePath):
+    '''
+    http://neophob.com/2010/03/wmi-query-windows-securitycenter2/
+    **FR**
+    Scan le système pour obtenir la liste et le status des produits de sécurité (antivirus, parefeu, antispyware)
+    Retourne le dictionnaire des produits de sécurité
+    **EN**
+    Scan to get security product in the system with their status (antivirus, firewall, antispyware)
+    Return security products dict
+    '''
+    writer.write('Getting security products')
+    # 1 - Ecriture début de log
+    logFile = logFilePath + "final.html"
+    writer.writeLog(logFile, '<div><br>\n')
+    elem = '<h2>Security products on computer "' + computername + '"</h2>'
+    writer.prepaLogScan(logFile, elem)
+
+    # 2 - Obtention des informations
+    securityProductDict = {}
+    i = 1
+    # Antivirus
+    strComputer = "."
+    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
+    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\SecurityCenter2")
+    colItems = objSWbemServices.ExecQuery("select * from AntivirusProduct")
+    for objItem in colItems:
+        productName = objItem.displayName
+        instanceGuid = objItem.instanceGuid
+        pathProduct = objItem.pathToSignedProductExe
+        pathReporting = objItem.pathToSignedReportingExe
+        productState = str(objItem.productState)
+        # ProductState conversion
+        rtstatus, defstatus = securityProductState(productStateDict, productState)
+        i+=1
+        # Put in dict
+        securityProductDict[i] = {'Name':productName, 'GUID':instanceGuid,
+                                            'pathProduct':pathProduct, 'pathReporting':pathReporting,
+                                            'productState':productState,
+                                            'rtstatus':rtstatus, 'defstatus':defstatus,
+                                            'Type':'Antivirus'}
+
+    # Firewalls
+    # Windows
+    XPFW = win32com.client.gencache.EnsureDispatch('HNetCfg.FwMgr', 0)
+    XPFW_policy = XPFW.LocalPolicy.CurrentProfile
+    writer.writeLog(logFile, 'Windows firewall enabled : ' + str(XPFW_policy.FirewallEnabled) + '<br>\n')
+    # Third party firewall
+    strComputer = "."
+    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
+    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\SecurityCenter2")
+    colItems = objSWbemServices.ExecQuery("select * from FireWallProduct")
+    for objItem in colItems:
+        productName = objItem.displayName
+        instanceGuid = objItem.instanceGuid
+        pathProduct = objItem.pathToSignedProductExe
+        pathReporting = objItem.pathToSignedReportingExe
+        productState = str(objItem.productState)
+        # ProductState conversion
+        rtstatus, defstatus = securityProductState(productStateDict, productState)
+        i+=1
+        # Put in dict
+        securityProductDict[i] = {'Name':productName, 'GUID':instanceGuid,
+                                            'pathProduct':pathProduct, 'pathReporting':pathReporting,
+                                            'productState':productState,
+                                            'rtstatus':rtstatus, 'defstatus':defstatus,
+                                            'Type':'Firewall'}
+
+    # AntiSpyware
+    strComputer = "."
+    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
+    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\SecurityCenter2")
+    colItems = objSWbemServices.ExecQuery("select * from AntiSpywareProduct")
+    for objItem in colItems:
+        productName = objItem.displayName
+        instanceGuid = objItem.instanceGuid
+        pathProduct = objItem.pathToSignedProductExe
+        pathReporting = objItem.pathToSignedReportingExe
+        productState = str(objItem.productState)
+        # ProductState conversion
+        rtstatus, defstatus = securityProductState(productStateDict, productState)
+        i+=1
+        # Put in dict
+        securityProductDict[i] = {'Name':productName, 'GUID':instanceGuid,
+                                            'pathProduct':pathProduct, 'pathReporting':pathReporting,
+                                            'productState':productState,
+                                            'rtstatus':rtstatus, 'defstatus':defstatus,
+                                            'Type':'Antispyware'}
+
+    # 3 - Ecrire du fichier CSV
+    header = ['Type', 'Name', 'GUID', 'pathProduct', 'pathReporting', 'productState', 'rtstatus', 'defstatus']
+    csvFile = logFilePath + "security_products.csv"
+    writer.writeCSV(csvFile, header, securityProductDict)
+    
+    # 4 - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Security Products')
+    htmltxt = htmltxt.replace('<TD>Outdated</TD>', '<TD id="ko">Outdated</TD>')
+    htmltxt = htmltxt.replace('<TD>Up to date</TD>', '<TD id="ok">Up to date</TD>')
+    htmltxt = htmltxt.replace('<TD>Disabled</TD>', '<TD id="ko">Disabled</TD>')
+    htmltxt = htmltxt.replace('<TD>Enabled</TD>', '<TD id="ok">Enabled</TD>')
+
+    # 5 - Ecriture de la fin du log
+    writer.writeLog(logFile, str(len(securityProductDict)) + ' security products :\n')
+    writer.writeLog(logFile, htmltxt)
+    writer.writeLog(logFile, '\n</div>\n')
+    
+    return securityProductDict
 
 def processInfo(logFilePath):
     '''
@@ -573,9 +710,9 @@ def processInfo(logFilePath):
     '''
     writer.write('Getting running processes')
     # 1 - Ecriture début de log
-    logFile = logFilePath + "final.html"
+    logFile = logFilePath + 'final.html'
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "***Running processes on computer ''" + computername + "''***"
+    elem = '<h2>Running processes on computer "' + computername + '"</h2>'
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des processus démarrés
@@ -590,7 +727,7 @@ def processInfo(logFilePath):
             
     # 3 - Ecrire du fichier CSV
     header = ['Name', 'PID']
-    csvFile = logFilePath + "processes.csv"
+    csvFile = logFilePath + 'processes.csv'
     writer.writeCSV(csvFile, header, procDict)
     
     # 4 - Transformation du CSV en HTML
@@ -599,8 +736,6 @@ def processInfo(logFilePath):
     # 5 - Ecriture de la fin du log
     writer.writeLog(logFile, str(len(procDict)) + ' running processes :\n')
     writer.writeLog(logFile, htmltxt)
-    elem = "------------------- Running processes listing finished -------------------"
-    writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
     return procDict
@@ -617,9 +752,9 @@ def servicesInfo(logFilePath):
     '''
     writer.write('Getting running services')
     # 1 - Ecriture début de log   
-    logFile = logFilePath + "final.html"
+    logFile = logFilePath + 'final.html'
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "***Running services on computer ''" + computername + "''***"
+    elem = '<h2>Running services on computer "' + computername + '"</h2>'
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des services démarrés
@@ -646,8 +781,6 @@ def servicesInfo(logFilePath):
     # 5 - Ecriture de la fin du log
     writer.writeLog(logFile, str(len(servicesDictRunning)) + ' running services :<br>\n')
     writer.writeLog(logFile, htmltxt)
-    elem = "------------------- Running services listing finished -------------------"
-    writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
     return servicesDictRunning
@@ -666,7 +799,7 @@ def portsInfo(logFilePath):
     # 1 - Ecriture début de log
     logFile = logFilePath + "final.html"
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "***Informations about network connections of computer ''" + computername + "''***"
+    elem = '<h2>Informations about network connections of computer "' + computername + '"</h2>'
     writer.prepaLogScan(logFile, elem)
 
     # 2 - obtenir la liste des connexions actives
@@ -694,8 +827,6 @@ def portsInfo(logFilePath):
     # 5 - Ecriture de la fin du log
     writer.writeLog(logFile, str(len(portsDict)) + ' network connections :<br>\n')
     writer.writeLog(logFile, htmltxt)
-    elem = "------------------- Computer network connections listing finished -------------------"
-    writer.prepaLogScan(logFile, elem)
     writer.writeLog(logFile, '\n</div>\n')
 
     return portsDict
@@ -709,9 +840,10 @@ if __name__ == '__main__':
     # usrfile = userInfo(r"E:\scanPC_dev_encours\TESTS\scans/")
     # pwdfile = pwdPolicy(r"E:\scanPC_dev_encours\TESTS\scans/")
     # sFfile = sharedFolders(r"C:\STOCKAGE\logScanPC\2019\05\7/")
-    hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
+    # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # systelInfofile = systemInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
     # systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
+    securityProduct = securityProductInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
     # processfile = processInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")

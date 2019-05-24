@@ -19,25 +19,23 @@ def genEicar(log):
     **EN**
     Generate an Eicar file to test antivirus
     '''
-    #Création du virus
+    # 1 - Création du virus
     logFilePath = os.path.dirname(log)
-    # print(logFilePath)
-    # sys.exit()
-    msg0 = "\n--Antivirus testing--\nAn Eicar virus test will be generated to test the antivirus."
+    msg0 = '\n--Antivirus testing--\nAn Eicar virus test will be generated to test the antivirus.'
     writer.write(msg0)
-    eicarFile = str(logFilePath)+"/eicar_testFile"
+    eicarFile = str(logFilePath) + '/eicar_testFile'
     element = 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
     writer.writeLog(eicarFile, element)
     time.sleep(3)
-    #Demande à l'utilisateur
-    msg0 = "\nDid the antivirus alert you ? (y = yes, n = no)\n"
+    
+    # 2 - Demande à l'utilisateur
+    msg0 = '\nDid the antivirus alert you ? (y = yes, n = no)\n'
     writer.write(msg0)
-    avEtat = "<br>***** Antivirus status *****<br>"
-    writer.writeLog(log, avEtat)
-    userRep = "FAILED - The antivirus does not alert/detect viruses.<br>\n"
+    avEtat = 'Antivirus status'
+    userRep = 'FAILED - The antivirus does not alert/detect viruses'
     if ask_dismount.reponse() == 'y':
-        userRep = "OK - The antivirus does alert/detect viruses.<br>\n"
-    writer.writeLog(log, userRep)
+        userRep = 'OK - The antivirus does alert/detect viruses'
+    return avEtat, userRep
 
 def elemInList(mode, thelist, elem):
     '''
@@ -47,19 +45,19 @@ def elemInList(mode, thelist, elem):
     Find an element in a list
     '''
     if mode == 1: #Applications
-        resultKO = 'Not installed\n'
-        resultOK = 'Installed\n'
+        resultKO = 'Not installed'
+        resultOK = 'Installed'
     elif mode == 2: #Services
-        resultKO = 'Not started\n'
-        resultOK = 'Started\n'
+        resultKO = 'Not started'
+        resultOK = 'Started'
     else:
         return '?'
     result = resultKO
 
     if elem in thelist:
         result = resultOK
-        # print(elem, " found !")
-    return elem + ' : ' + result
+
+    return result
     
 def mcAfee(compleLog):
     '''
@@ -68,40 +66,18 @@ def mcAfee(compleLog):
     **EN**
     Get more informations about McAfee
     '''
-    restemp = "N/A"
-    dateVer = "Date & version : " + restemp
-    epoLst = "\n--EPO servers list--<br>" + restemp
+    restemp = 'N/A'
+    dateVer = 'Date & version : ' + restemp
+    epoLst = '\n--EPO servers list--<br>' + restemp
     try:
         dateVer, epoLst = av_date.getMcAfee()
     except Exception:
-        # print(Exception)
         pass
-    infoMcAfee = "***** McAfee informations *****<br>"
+    infoMcAfee = '***** McAfee informations *****<br>'
     writer.writeLog(compleLog, infoMcAfee)
     writer.writeLog(compleLog, dateVer + '<br>')
-    writer.writeLog(compleLog, epoLst + '<br>\n')
-    
-def wsus(log, servicesDictRunning):
-    '''
-    **FR**
-    Récupere une information complémentaire sur WSUS/BranchCache
-    **EN**
-    Get more informations about WSUS/BranchCache
-    ''' 
-    infoBC = "<br>***** WSUS/BranchCache service state *****<br>"
-    writer.writeLog(log, infoBC)
-    res = elemInList(2, list(servicesDictRunning.keys()), 'PeerDistSvc')
-    writer.writeLog(log, res  + '<br>')
+    writer.writeLog(compleLog, epoLst + '<br>\n\n')
 
-    restemp = "N/A<br>\n"
-    srvWSUS = "WSUS server : " + restemp
-    try:
-        srvWSUS = av_date.getWsus() + '<br>'
-    except Exception:
-        # print(Exception)
-        pass
-    writer.writeLog(log, srvWSUS)
-    
 def init(logFilePath, softwareDict, servicesDictRunning):
     '''
     **FR**
@@ -110,34 +86,67 @@ def init(logFilePath, softwareDict, servicesDictRunning):
     Init search
     '''
     # 1 - Ecriture début de log (à la fin du log fourni)
-    log = logFilePath + "final.html"
-    elem = "************* Other tests *************"
+    log = logFilePath + 'final.html'
+    elem = '<h2>Additional scans</h2>'
     writer.prepaLogScan(log, elem)
     writer.writeLog(log, '<div>\n')
 
     # 2 - Obtention des informations complémentaires
-    #McAfee
+    # McAfee
     mcAfee(log)
 
+    complementDict = {} #Name Result
     #LAPS
-    infoLaps = "<br>***** LAPS state *****<br>"
-    writer.writeLog(log, infoLaps)
-    res = elemInList(1, list(softwareDict.keys()), 'Local Administrator Password Solution')
-    writer.writeLog(log, res + '<br>')
+    infoLaps = 'LAPS'
+    toFind = 'Local Administrator Password Solution'
+    res = elemInList(1, list(softwareDict.keys()), toFind)
+    complementDict[infoLaps] = {'Name':infoLaps, 'Description':toFind, 'Result':res, 'Type':'Software test'}
 
-    ###Services
+    ### Services
 
-    ##BranchCache/WSUS
-    wsus(log, servicesDictRunning)
+    ## BranchCache/WSUS
+    # BranchCache
+    infoBC = 'BranchCache'
+    toFind = 'PeerDistSvcs'
+    res = elemInList(2, list(servicesDictRunning.keys()), toFind)
+    complementDict[infoBC] = {'Name':infoBC, 'Description':toFind, 'Result':res, 
+                                'Type':'Service test'}
 
-    ##AppLocker
-    infoAL = "<br>***** AppLocker service state *****<br>"
-    writer.writeLog(log, infoAL)
-    res = elemInList(2, list(servicesDictRunning.keys()), 'AppIDSvc')
-    writer.writeLog(log, res  + '<br>')
+    # WSUS
+    infoWSUS = 'WSUS'
+    toFind = 'WSUS server'
+    restemp = 'N/A'
+    srvWSUS = restemp
+    try:
+        srvWSUS = av_date.getWsus()
+    except Exception:
+        pass
+    complementDict[infoWSUS] = {'Name':infoWSUS, 'Description':toFind, 'Result':srvWSUS, 
+                                'Type':'Service test'}
 
-    #TestAV
-    msg0 = "\nDo you want to perform an antivirus detection test ? (y = yes, n = no)\n"
+    ## AppLocker
+    infoAL = 'AppLocker'
+    toFind = 'AppIDSvc'
+    res = elemInList(2, list(servicesDictRunning.keys()), toFind)
+    complementDict[infoAL] = {'Name':infoAL, 'Description':toFind, 'Result':res, 'Type':'Service test'}
+
+    # TestAV
+    msg0 = '\nDo you want to perform an antivirus detection test ? (y = yes, n = no)\n'
     writer.write(msg0)
     if ask_dismount.reponse() == 'y':
-        genEicar(log)
+       avEtat, userRep = genEicar(log)
+       toFind = 'Antivirus alert'
+       complementDict[avEtat] = {'Name':avEtat, 'Description':toFind, 'Result':userRep, 'Type':'Service test'}
+
+    # 3 - Ecrire du fichier CSV
+    header = ['Type', 'Name', 'Description', 'Result']
+    csvFile = logFilePath + 'additional_scans.csv'
+    writer.writeCSV(csvFile, header, complementDict)
+
+    # 4 - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csvFile, 'Additional Scans')
+
+    # 5 - Ecriture de la fin du log
+    writer.writeLog(log, str(len(complementDict)) + ' additional scans :\n')
+    writer.writeLog(log, htmltxt)
+    writer.writeLog(log, '\n</div>\n')

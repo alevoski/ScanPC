@@ -60,21 +60,16 @@ def scanPc(key, logFilePath):
         </head>
         <body>
             <p>
-            {0} <br>
+            {0}
             {1} <br>
-            {2} <br>
-            {3} <br>
             </p>"""
             # </body>
         # </html>"""
     
     #texte d'intro 
-    texte01 = '*'*114 + '\n'
-    texte02 = '-' * 26 + " Scanning of computer ''" + computername + '" ' + '-' *26
-    element2 = '\n' + '-' * 26 + datetime.now().strftime("%A %d %B %Y %H:%M:%S") + '-' *26 + '\n'
-    # logIntro = str(logFilePath)+"intro.txt"
-    element0 = texte01 + texte02 + element2 + texte01
-    element = elementRaw.format(texte01, texte02, element2, texte01)
+    texte02 = '<h1>Scanning of computer "' + computername + '"</h1>'
+    element2 = '<time>' + datetime.now().strftime("%A %d %B %Y %H:%M:%S") + '</time>\n'
+    element = elementRaw.format(texte02, element2)
     writer.writeLog(logFile, element)
 
     #Scans de bases
@@ -82,6 +77,7 @@ def scanPc(key, logFilePath):
     logSF = scans.sharedFolders(logFilePath)
     hotfixDict = scans.hotFixesInfo(logFilePath)
     logfilefull = scans.systemInfo(logFilePath)
+    securityProductDict = scans.securityProductInfo(logFilePath)
     procDict = scans.processInfo(logFilePath)
     servicesDictRunning = scans.servicesInfo(logFilePath)
     portsDict = scans.portsInfo(logFilePath)

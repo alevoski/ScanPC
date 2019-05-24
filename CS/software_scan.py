@@ -8,6 +8,7 @@ import winreg
 import os
 import json
 import re
+from unicodedata import normalize
 
 #Project modules imports
 import writer
@@ -60,7 +61,7 @@ def softwareInit(logFilePath):
     # 1 - Début de l'analyse des logiciels
     logFile = logFilePath + "final.html"
     writer.writeLog(logFile, '<div><br>\n')
-    elem = "***************************Software informations of computer ''" + computername + "''***************************"
+    elem = '<h2>Software informations of computer "' + computername + '"</h2>'
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des logiels de l'ordinateur
@@ -88,16 +89,42 @@ def softwareInit(logFilePath):
     htmltxt = writer.csv2html(csvFile, 'Installed software')
 
     # 6 - Placer des id sur certains tags du tableau
-    # htmltxt = writer.modHTML(htmltxt, '<TD>ko</TD>', '<TD id="ko">ko</TD>')
     htmltxt = htmltxt.replace('<TD>ko</TD>', '<TD id="ko">ko</TD>')
-    # htmltxt = writer.modHTML(htmltxt, '<TD>ok</TD>', '<TD id="ok">ok</TD>')
     htmltxt = htmltxt.replace('<TD>ok</TD>', '<TD id="ok">ok</TD>')
     
-    # 6 - Ecriture fin du log
+    # 7 - Bilan
+    softOK = 0
+    softKO = 0
+    others = 0
+    for item, value in finalDict.items():
+        stat = value['Up to date']
+        if stat == 'ok':
+            softOK+= 1
+        elif stat == 'ko':
+            softKO+= 1
+        else:
+            others+= 1
+
+    softSummary = {}
+    softSummary[str(len(finalDict))] = {'Total Software':str(len(finalDict)),
+                   'Up to date':str(softOK), '% up to date':str(round(softOK/len(finalDict)*100)),
+                   'Outdated':str(softKO), '% outdated':str(round(softKO/len(finalDict)*100)),
+                   'others':str(others), '% others':str(round(others/len(finalDict)*100))}
+
+    header = ['Total Software', 'Up to date', '% up to date', 'Outdated', '% outdated', 'others', '% others']
+    csvFile = logFilePath + "software_summary.csv"
+    writer.writeCSV(csvFile, header, softSummary)
+    htmltxt2 = writer.csv2html(csvFile, 'Software summary')
+    htmltxt2 = htmltxt2.replace('<TH>Up to date</TH>', '<TH id="ok">Up to date</TH>')
+    htmltxt2 = htmltxt2.replace('<TH>% up to date</TH>', '<TH id="ok">% up to date</TH>')
+    htmltxt2 = htmltxt2.replace('<TH>Outdated</TH>', '<TH id="ko">Outdated</TH>')
+    htmltxt2 = htmltxt2.replace('<TH>% outdated</TH>', '<TH id="ko">% outdated</TH>')
+    
+    # 8 - Ecriture fin du log
     writer.writeLog(logFile, str(len(finalDict)) + ' software found :\n')
     writer.writeLog(logFile, htmltxt)
-    elem = '-' * 25 + ' Software scanning ended ' + '-' * 25
-    writer.prepaLogScan(logFile, elem)
+    writer.writeLog(logFile, '<br>Software summary :')
+    writer.writeLog(logFile, htmltxt2)
     writer.writeLog(logFile, '\n</div>\n')
     texte5bis = "Software scanning ended.\n"
     writer.write(texte5bis)
@@ -177,8 +204,7 @@ def searchVersionInName(nameSoft):
     Search and return a version number from a software name
     '''
     try:
-        # print(str(re.findall("(\d{0,2}(\.\d{1,2}).*)", nameSoft)[0][0]))
-        return str(re.findall("(\d{0,2}(\.\d{1,2}).*)", nameSoft)[0][0])
+        return str(re.findall("(\d{0,2}(\.\d{1,2}).*?)", nameSoft)[0][0])
     except IndexError:
         return ''
     
@@ -206,23 +232,24 @@ def searchSoftware(software, thekey):
             pathSoft = reg(hive, softkey, path)
             # Conditions : some software does not have version & avoid Microsoft Updates
             if nameSoft != None and nameSoft != '' and 'Update for' not in nameSoft and publisherSoft != None:
-                # Is version empty then look for it in name
-                if versionSoft == None:
-                    versionSoft = searchVersionInName(nameSoft)
-                # Is software up to date ?
-                stat = ''
-                lastUpdate = ''
-                lastVersion = ''
-                if nameSoft not in otherSoftLst: #do nothing if software is in otherSoftLst
-                    stat, lastUpdate, lastVersion = isUptodate(nameSoft, versionSoft)
-                # Write in dict
-                softwareDict[nameSoft.title()] = {'Name':nameSoft.title(),
-                                            'Version':versionSoft,
-                                            'Last Update':lastUpdate,
-                                            'Last Version':lastVersion,
-                                            'Up to date':stat,
-                                            'Publisher':publisherSoft,
-                                            'Location':pathSoft}
+                if normalize('NFKD', nameSoft.title()) not in softwareDict:
+                    # Is version empty then look for it in name
+                    if versionSoft == None:
+                        versionSoft = searchVersionInName(nameSoft)
+                    # Is software up to date ?
+                    stat = ''
+                    lastUpdate = ''
+                    lastVersion = ''
+                    if nameSoft not in otherSoftLst: #do nothing if software is in otherSoftLst
+                        stat, lastUpdate, lastVersion = isUptodate(nameSoft, versionSoft)
+                    # Write in dict
+                    softwareDict[normalize('NFKD', nameSoft.title())] = {'Name':normalize('NFKD', nameSoft.title()),
+                                                'Version':versionSoft,
+                                                'Last Update':lastUpdate,
+                                                'Last Version':lastVersion,
+                                                'Up to date':stat,
+                                                'Publisher':publisherSoft,
+                                                'Location':pathSoft}
     except TypeError:
         pass
     return softwareDict
