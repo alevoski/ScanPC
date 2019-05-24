@@ -5,9 +5,9 @@ Then the project has been refreshed in March 2019 with major modifications, in a
 
 20/05/2019 - 24/05/2019
     software_scan module will try to find version number in software name if no version has been found in regedit
-    complement module now show results in an HTML table (thanks to a CSV file)
+    complement module now shows results in an HTML table (thanks to a CSV file)
     Two new functions in scans module
-        securityProductInfo() and securityProductState() which find informations about security product
+        securityProductInfo() and securityProductState() which find informations about security products
             Antivirus
             FireWall
             AntiSpyware
