@@ -422,13 +422,14 @@ def systemInfo(logFilePath):
     writer.writeLog(logFile, 'Install Date: ' + str(datetime.fromtimestamp(dictToSave.get('InstallDate'))) + '<br>\n')
     writer.writeLog(logFile, 'System Root: ' + dictToSave.get('SystemRoot') + '<br>\n')
     
-    # Language
-    bufSize = 32
-    buf = ctypes.create_unicode_buffer(bufSize)
-    dwFlags = 0
-    lcid = ctypes.windll.kernel32.GetUserDefaultUILanguage()
-    ctypes.windll.kernel32.LCIDToLocaleName(lcid, buf, bufSize, dwFlags)
-    writer.writeLog(logFile, 'Regional and language options : ' + buf.value + '<br>\n')
+    # Language (Windows Vista or further)
+    if detectOS() != 'xp':
+        bufSize = 32
+        buf = ctypes.create_unicode_buffer(bufSize)
+        dwFlags = 0
+        lcid = ctypes.windll.kernel32.GetUserDefaultUILanguage()
+        ctypes.windll.kernel32.LCIDToLocaleName(lcid, buf, bufSize, dwFlags)
+        writer.writeLog(logFile, 'Regional and language options : ' + buf.value + '<br>\n')
     
     # Time zone
     writer.writeLog(logFile, 'Time zone : ' + time.tzname[0] + '<br>\n')
@@ -601,6 +602,14 @@ def securityProductInfo(logFilePath):
     Scan to get security product in the system with their status (antivirus, firewall, antispyware)
     Return security products dict
     '''
+    # Determinate what namespace to call
+    secNameSpace = 'SecurityCenter'
+    if detectOS() != 'xp':
+        secNameSpace = 'SecurityCenter2'
+    strComputer = "."
+    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
+    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\\" + secNameSpace)
+        
     writer.write('Getting security products')
     # 1 - Ecriture début de log
     logFile = logFilePath + "final.html"
@@ -612,9 +621,6 @@ def securityProductInfo(logFilePath):
     securityProductDict = {}
     i = 1
     # Antivirus
-    strComputer = "."
-    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
-    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\SecurityCenter2")
     colItems = objSWbemServices.ExecQuery("select * from AntivirusProduct")
     for objItem in colItems:
         productName = objItem.displayName
@@ -638,9 +644,6 @@ def securityProductInfo(logFilePath):
     XPFW_policy = XPFW.LocalPolicy.CurrentProfile
     writer.writeLog(logFile, 'Windows firewall enabled : ' + str(XPFW_policy.FirewallEnabled) + '<br>\n')
     # Third party firewall
-    strComputer = "."
-    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
-    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\SecurityCenter2")
     colItems = objSWbemServices.ExecQuery("select * from FireWallProduct")
     for objItem in colItems:
         productName = objItem.displayName
@@ -658,26 +661,24 @@ def securityProductInfo(logFilePath):
                                             'rtstatus':rtstatus, 'defstatus':defstatus,
                                             'Type':'Firewall'}
 
-    # AntiSpyware
-    strComputer = "."
-    objWMIService = win32com.client.Dispatch("WbemScripting.SWbemLocator")
-    objSWbemServices = objWMIService.ConnectServer(strComputer,"root\SecurityCenter2")
-    colItems = objSWbemServices.ExecQuery("select * from AntiSpywareProduct")
-    for objItem in colItems:
-        productName = objItem.displayName
-        instanceGuid = objItem.instanceGuid
-        pathProduct = objItem.pathToSignedProductExe
-        pathReporting = objItem.pathToSignedReportingExe
-        productState = str(objItem.productState)
-        # ProductState conversion
-        rtstatus, defstatus = securityProductState(productStateDict, productState)
-        i+=1
-        # Put in dict
-        securityProductDict[i] = {'Name':productName, 'GUID':instanceGuid,
-                                            'pathProduct':pathProduct, 'pathReporting':pathReporting,
-                                            'productState':productState,
-                                            'rtstatus':rtstatus, 'defstatus':defstatus,
-                                            'Type':'Antispyware'}
+    if detectOS() != 'xp':
+        # AntiSpyware
+        colItems = objSWbemServices.ExecQuery("select * from AntiSpywareProduct")
+        for objItem in colItems:
+            productName = objItem.displayName
+            instanceGuid = objItem.instanceGuid
+            pathProduct = objItem.pathToSignedProductExe
+            pathReporting = objItem.pathToSignedReportingExe
+            productState = str(objItem.productState)
+            # ProductState conversion
+            rtstatus, defstatus = securityProductState(productStateDict, productState)
+            i+=1
+            # Put in dict
+            securityProductDict[i] = {'Name':productName, 'GUID':instanceGuid,
+                                                'pathProduct':pathProduct, 'pathReporting':pathReporting,
+                                                'productState':productState,
+                                                'rtstatus':rtstatus, 'defstatus':defstatus,
+                                                'Type':'Antispyware'}
 
     # 3 - Ecrire du fichier CSV
     header = ['Type', 'Name', 'GUID', 'pathProduct', 'pathReporting', 'productState', 'rtstatus', 'defstatus']
@@ -742,7 +743,7 @@ def processInfo(logFilePath):
 
 def servicesInfo(logFilePath):
     '''
-    ~ wmic service where started=true get name, startname
+    ~ wmic service where started=true get name, displayname, processid, startmode, startname, pathname
     **FR**
     Liste les services démarrés sur l'ordinateur
     Retourne la liste des noms des services démarrés
@@ -758,17 +759,29 @@ def servicesInfo(logFilePath):
     writer.prepaLogScan(logFile, elem)
 
     # 2 - Obtenir la liste des services démarrés
-    servicesList = psutil.win_service_iter()
-    servicesDictRunning = {}
-    for srv in servicesList:
-        srvname = re.findall("name='(.*)',", str(srv))[0]
-        serviceTemp = psutil.win_service_get(srvname)
-        service = serviceTemp.as_dict()
-        # Keep running services
-        if service['status'] == 'running':
-            servicesDictRunning[service['name']] = {'Name':service['name'], 'PID':service['pid'],
-                                'Display_Name':service['display_name'], 'Start_Type':service['start_type'],
-                                'Username':service['username'], 'Binpath':service['binpath']}
+    if detectOS() != 'xp' or psutil.__version__ != '3.4.2':
+        servicesList = psutil.win_service_iter()
+        servicesDictRunning = {}
+        for srv in servicesList:
+            srvname = re.findall("name='(.*)',", str(srv))[0]
+            serviceTemp = psutil.win_service_get(srvname)
+            service = serviceTemp.as_dict()
+            # Keep running services
+            if service['status'] == 'running':
+                servicesDictRunning[service['name']] = {'Name':service['name'], 'PID':service['pid'],
+                                    'Display_Name':service['display_name'], 'Start_Type':service['start_type'],
+                                    'Username':service['username'], 'Binpath':service['binpath']}
+    else:
+        import wmi
+        c = wmi.WMI()
+        servicesList = c.Win32_Service()
+        servicesDictRunning = {}
+        for srv in servicesList:
+            # Keep running services
+            if srv.State == 'Running':
+                servicesDictRunning[srv.name] = {'Name':srv.name, 'PID':srv.processid,
+                                    'Display_Name':srv.displayname, 'Start_Type':srv.startmode,
+                                    'Username':srv.startname, 'Binpath':srv.pathname}
 
     # 3 - Ecriture du fichier CSV
     header = ['Name', 'Display_Name', 'PID', 'Start_Type', 'Username', 'Binpath']
@@ -843,9 +856,9 @@ if __name__ == '__main__':
     # hotFixesfile = hotFixesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # systelInfofile = systemInfo(r"C:\scanPC_dev_encours\TESTS\scans/")
     # systelInfofile = systemInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
-    securityProduct = securityProductInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
+    # securityProduct = securityProductInfo(r'C:\STOCKAGE\logScanPC\2019\05\7/')
     # processfile = processInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
-    # servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
+    servicesfile = servicesInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     # portfile = portsInfo(r"C:\STOCKAGE\logScanPC\2019\05\7/")
     
 # mcAfeeLog = str(logFilePath)+"mcAfeeLog.txt"

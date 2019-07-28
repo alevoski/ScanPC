@@ -4,7 +4,7 @@
 [![Language](https://img.shields.io/badge/language-python3-orange.svg)](https://www.python.org/)
 
 ScanPC is an audit tool for Windows.  
-It scans your Windows computer to gather informations like :  
+It scans Windows computers to gather informations like :  
 - the user accounts list
 - the password policy
 - the share folders list
@@ -23,9 +23,10 @@ Python 3.6 32 bit is used for all new developments.
 Project ongoing.  
 
 ## Compatibility
-This software has been succesfully tested on the following Microsoft Windows systems (32 and 64 bits):  
-- 7
-- 10
+This software has been succesfully tested on the following Microsoft Windows systems :  
+- XP x86
+- 7 x86 and x64
+- 10 x86 and x64
 
 ## Getting Started
 **Download the project on your computer.**
@@ -36,6 +37,17 @@ git clone https://github.com/alevoski/ScanPC.git
 **Install the required pip modules**
 ```
 pip install -r requirements.txt
+```
+
+If you want to run it on Python 3.4 (for Windows XP compatibility) :
+- you must install [pywin32-219.win32-py3.4.exe](https://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/pywin32-219.win32-py3.4.exe/download)
+- you must install psutil v3.4.2
+```
+pip install psutil==3.4.2
+```
+- you must install wmi (tested with v1.4.9)
+```
+pip install wmi
 ```
 
 **Optional tool**  
@@ -50,28 +62,30 @@ python main.py
 ```
 
 **Method 2 - Compile the code into an executable file**  
-You will need pyinstaller module 
+You will need pyinstaller module
 ```
 pip install pyinstaller
 c:\<yourpythonpath>\Scripts\pyinstaller.exe --onefile --icon=logoScanPC.ico main.py
 ```
 A folder named "dist" will be created with a scanPC executable file.  
-Note : you need to compile with a 32 bit Python version to perform scan on 32 bit Windows OS  
-  
+***Note*** : you need to compile with a 32 bit Python version to perform scan on x86 and x64 Windows OS  
+***Note 2*** : you need to compile with Python 3.4 x86 for a maximum OS compatibility  
+***Note 3*** : you need [Visual C++ 2010 X86](https://www.microsoft.com/en-US/download/confirmation.aspx?id=5555) to execute a compiled Python program on the targeted computers
+
 Put the code or the exe on a USB key and go scanning some Windows computers.  
 
-***Note : To limit viruses spreading, you should always analyze your scanning devices between two scans !***
+***Note : To limit viruses spreading, you should always analyze your scanning devices between two scans !***  
 [Decontamine_Linux can help you !](https://github.com/alevoski/decontamine_Linux)
 
 #### Demo  
 ![](DOCS/DEMO/scanpc_demo.gif)  
 
 ## Author
-Alexandre Buissé
+Alexandre BuissÃ©
 
 ## License
 ScanPC. Audit tool for Windows.  
-Copyright (C) 2019 Alexandre Buissé alevoski@pm.me
+Copyright (C) 2019 Alexandre BuissÃ© alevoski@pm.me
 
 This program is free software: you can redistribute it and/or modify  
 it under the terms of the GNU Affero General Public License as published  
@@ -85,5 +99,3 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License  
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
