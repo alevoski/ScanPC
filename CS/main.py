@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #ScanPC - main.py
-#@Alexandre Buissé - 2019
+#@Alexandre Buissé - 2019/2020
 
 #Standard imports
 import os
@@ -12,28 +12,26 @@ from datetime import datetime
 #Project modules imports
 import writer
 import verif
-import ask_dismount
 import scans
-import software_scan
-import complement
+from software_scan import software_init
+from complement import complement_init
 
-computername = os.environ['COMPUTERNAME']
-styleCssFile = os.getcwd() + '/style.css'
+COMPUTERNAME = os.environ['COMPUTERNAME']
+STYLECSSFILE = os.getcwd() + '/style.css'
 
-def scanPart():
-    ''' 
+def scanpart():
+    '''
     **FR**
     Retourne la lettre du lecteur où est exécuté l'app
     **EN**
     Return the drive letter where the app is launched
-    ''' 
-    key = os.getcwd() #On prend le chemin du répertoire du script/exe
+    '''
+    key = os.getcwd() # On prend le chemin du répertoire du script/exe
     key = str(key[:2])
-    # print("key => ", str(key)) #test ok
     return key
 
-def scanPc(key, logFilePath):
-    ''' 
+def scanpc(log_file_path):
+    '''
     **FR**
     Exécute le scan de l'ordinateur en appelant diverses fonctions,
     écrit les logs sur le périphérique qui a lancé l'exécutable,
@@ -41,17 +39,15 @@ def scanPc(key, logFilePath):
     **EN**
     Process the computer scan with several other functions,
     write logs on the device where the app has been launched,
-    Return the final log path 
+    Return the final log path
     '''
-    # print("logFilePath : "+str(logFilePath))
+    texte = "Computer scanning in progress... Please wait...\n"
+    writer.writer(texte)
 
-    texte3 = "Computer scanning in progress... Please wait...\n"
-    writer.write(texte3)
-    
-    logFile = str(logFilePath) + "FINAL.html"
-    
-    #write first html tags
-    elementRaw = """<!DOCTYPE html>
+    log_file = str(log_file_path) + "FINAL.html"
+
+    # Write first html tags
+    elementraw = """<!DOCTYPE html>
     <html>
         <head>
             <title>ScanPC result</title>
@@ -65,41 +61,43 @@ def scanPc(key, logFilePath):
             </p>"""
             # </body>
         # </html>"""
-    
-    #texte d'intro 
-    texte02 = '<h1>Scanning of computer "' + computername + '"</h1>'
-    element2 = '<time>' + datetime.now().strftime("%A %d %B %Y %H:%M:%S") + '</time>\n'
-    element = elementRaw.format(texte02, element2)
-    writer.writeLog(logFile, element)
 
-    #Scans de bases
-    logAllUsers = scans.userInfo(logFilePath)
-    logSF = scans.sharedFolders(logFilePath)
-    hotfixDict = scans.hotFixesInfo(logFilePath)
-    logfilefull = scans.systemInfo(logFilePath)
-    securityProductDict = scans.securityProductInfo(logFilePath)
-    procDict = scans.processInfo(logFilePath)
-    servicesDictRunning = scans.servicesInfo(logFilePath)
-    portsDict = scans.portsInfo(logFilePath)
+    # Texte d'intro
+    texte = '<h1>Scanning of computer "' + COMPUTERNAME + '"</h1>'
+    element2 = '<time>' + datetime.now().strftime("%A %d %B %Y %H:%M:%S") + '</time>\n'
+    element = elementraw.format(texte, element2)
+    writer.writelog(log_file, element)
+
+    # Scans de base
+    scans.user_info(log_file_path)
+    scans.shared_folders_info(log_file_path)
+    scans.hotfixes_info(log_file_path)
+    scans.system_info(log_file_path)
+    scans.security_product_info(log_file_path)
+    scans.process_info(log_file_path)
+    services_running_dict = scans.services_info(log_file_path)
+    scans.ports_info(log_file_path)
 
     texte4 = "\nBasic scan ended.\n"
-    writer.write(texte4)
-    
-    #Scan des logiciels
-    softwareDict = software_scan.softwareInit(logFilePath)
+    writer.writer(texte4)
 
-    return logFile, softwareDict, servicesDictRunning
+    # Scan des logiciels
+    software_dict = software_init(log_file_path)
 
-def readandcopy(concatenateBasesFiles1):
+    return log_file, software_dict, services_running_dict
+
+def readandcopy(log_file):
     '''
     **FR**
-    Proposer à l'utilisateur d'ouvrir le log passé en paramètre et de le copier sur l'ordinateur scanné
+    Proposer à l'utilisateur d'ouvrir le log passé en paramètre
+    et de le copier sur l'ordinateur scanné
     **EN**
-    Ask user if he wants to read the log and if he wants a copy of the log on the scanned computer
+    Ask user if he wants to read the log
+    and if he wants a copy on the scanned computer
     '''
     msg0 = "\nDo you want to read the scan report ? (y = yes, n = no)\n"
-    writer.write(msg0)
-    if ask_dismount.reponse() == 'y':
+    writer.writer(msg0)
+    if verif.reponse() == 'y':
         openers = webbrowser._tryorder
         opened = 0
         for browsers in openers:
@@ -107,25 +105,25 @@ def readandcopy(concatenateBasesFiles1):
             if 'firefox' in browsers.lower() or 'iexplore' in browsers.lower():
                 # print('Opening with ' + browsers)
                 browser = webbrowser.get(webbrowser._tryorder[openers.index(browsers)])
-                browser.open('file:' + str(concatenateBasesFiles1))
+                browser.open('file:' + str(log_file))
                 opened = 1
                 break
-        if opened ==0:
-            webbrowser.open(str(concatenateBasesFiles1))
+        if opened == 0:
+            webbrowser.open(str(log_file))
 
     # Copie de fichier vers un emplacement défini
-    msg0 = "\nDo you want a copy the scan report on the computer (C:\ drive) ? (y = yes, n = no)\n"
-    writer.write(msg0)
-    if ask_dismount.reponse() == 'y':
-        #Copy log
-        fileName = os.path.basename(concatenateBasesFiles1)
-        fileToWrite = "C:/" + fileName
-        writer.copyFile(concatenateBasesFiles1, fileToWrite)
-        #Copy CSS file
-        if os.path.isfile(styleCssFile):
-            fileName = os.path.basename(styleCssFile)
-            fileToWrite = "C:/" + fileName
-            writer.copyFile(styleCssFile, fileToWrite)
+    msg0 = "\nDo you want a copy the scan report on the computer (C:\\ drive) ? (y = yes, n = no)\n"
+    writer.writer(msg0)
+    if verif.reponse() == 'y':
+        # Copy log
+        file_name = os.path.basename(log_file)
+        file_to_write = "C:/" + file_name
+        writer.copy_file(log_file, file_to_write)
+        # Copy CSS file
+        if os.path.isfile(STYLECSSFILE):
+            file_name = os.path.basename(STYLECSSFILE)
+            file_to_write = "C:/" + file_name
+            writer.copy_file(STYLECSSFILE, file_to_write)
 
 def fin(key):
     '''
@@ -134,20 +132,24 @@ def fin(key):
     **EN**
     If the device is removable, ask the user to safely remove (dismount) his device
     '''
-    #Test si lecteur amovible    
-    texte2 = "Computer scanning ended, details have been saved on " + str(key) + ".\n"
-    writer.write(texte2)
+    # Test si lecteur amovible
+    texte = "Computer scanning ended, details have been saved on " + str(key) + ".\n"
+    writer.writer(texte)
     if verif.amovible(key):
-        #Proposer la déconnexion de la clé
+        # Proposer la déconnexion de la clé
         msg0 = "\nDo you want to dismount your device and quit ? (y = yes, n = no)\n"
-        writer.write(msg0)
-        if ask_dismount.reponse() == 'y':
-            ask_dismount.dismount(key)
-            sys.exit(0)
-    ask_dismount.quitter()
+        writer.writer(msg0)
+        if verif.reponse() == 'y':
+            verif.dismount(key)
+    verif.quitter()
 
-while True:
-    chose = 0
+def init():
+    '''
+    **FR**
+    Initialisation du programme
+    **EN**
+    Software initialization
+    '''
     print('\t\t\t---------- ScanPC ---------')
     print('\t***************************************************************')
     print('\t*\t\t    Computer scanning                         *')
@@ -157,41 +159,44 @@ while True:
     print('\t*\t No copy of your data will be performed.              *')
     print('\t***************************************************************')
     print()
-    while chose == 0:
-        #Begin timer
-        beginScan = time.time()
-        
-        #Début du programme
-        key = scanPart()
-        uniqueDir = str(computername) + '_' + datetime.now().strftime('%d%m%y%H%M%S')
-        logFilePath = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/') + uniqueDir + '/' + uniqueDir
-        #Appelle de scanPC
-        logFile, softwareDict, servicesDictRunning = scanPc(key, logFilePath)
-        #Tests complémentaires
-        complement.init(logFilePath, softwareDict, servicesDictRunning)
-        writer.writeLog(logFile, '\n</div>\n')
-        
-        #Ending timer
-        endScan = time.time()
-        totalTimeScan = endScan - beginScan
-        elem = "----------------------- Scan ended ------------------------"
-        writer.prepaLogScan(logFile, elem)
-        totalTime = 'Computer analyzed in {} seconds.'.format(round(totalTimeScan, 2))
-        writer.writeLog(logFile, totalTime)
-        writer.write('Computer analyzed in ' + str(round(totalTimeScan, 2)) + ' seconds.\n')
-        
-        #write last html tags
-        elementRaw = """
-            </body>
-        </html>"""
-        writer.writeLog(logFile, elementRaw)
-        
-        #copy css file in the log directory
-        if os.path.isfile(styleCssFile):
-            fileName = os.path.basename(styleCssFile)
-            fileToWrite = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/') + uniqueDir + '/'  + fileName
-            writer.copyFile(styleCssFile, fileToWrite)
 
-        #Fin du programme
-        readandcopy(logFile)
-        fin(key)
+    # Begin timer
+    begin_scan = time.time()
+
+    # Début du programme
+    key = scanpart()
+    unique_dir = str(COMPUTERNAME) + '_' + datetime.now().strftime('%d%m%y%H%M%S')
+    log_file_path = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/') + unique_dir + '/' + unique_dir
+    # Appel de scanPC
+    log_file, software_dict, services_running_dict = scanpc(log_file_path)
+    # Tests complémentaires
+    complement_init(log_file_path, software_dict, services_running_dict)
+    writer.writelog(log_file, '\n</div>\n')
+
+    # Ending timer
+    end_scan = time.time()
+    total_time_scan = end_scan - begin_scan
+    elem = "----------------------- Scan ended ------------------------"
+    writer.prepa_log_scan(log_file, elem)
+    total_time = 'Computer analyzed in {} seconds.'.format(round(total_time_scan, 2))
+    writer.writelog(log_file, total_time)
+    writer.writer('Computer analyzed in ' + str(round(total_time_scan, 2)) + ' seconds.\n')
+
+    # Write last html tags
+    elementraw = """
+        </body>
+    </html>"""
+    writer.writelog(log_file, elementraw)
+
+    # Copy css file in the log directory
+    if os.path.isfile(STYLECSSFILE):
+        file_name = os.path.basename(STYLECSSFILE)
+        file_to_write = str(key) + "/logScanPC/" + datetime.now().strftime('%Y/%m/%d/') + unique_dir + '/'  + file_name
+        writer.copy_file(STYLECSSFILE, file_to_write)
+
+    #Fin du programme
+    readandcopy(log_file)
+    fin(key)
+
+if __name__ == '__main__':
+    init()
