@@ -3,6 +3,11 @@ Note : this project started in October 2016.
 Many improvements have been done since this date until August 2018.
 Then the project has been refreshed in March 2019 with major modifications, in a more pythonic way.
 
+15/02/2020
+    Change in readme.md
+        Add parameter --hiddenimport win32timezone in pyinstaller compilation instruction
+    New demo GIF
+
 07/02/2020 - 09/02/2020
     Modules static analysis (# pylint3 --disable=line-too-long) + code cleaning and minor corrections
         main.py             9.71/10

@@ -65,7 +65,7 @@ python main.py
 You will need pyinstaller module
 ```
 pip install pyinstaller
-c:\<yourpythonpath>\Scripts\pyinstaller.exe --onefile --icon=logoScanPC.ico main.py
+c:\<yourpythonpath>\Scripts\pyinstaller.exe --hiddenimport win32timezone --onefile --icon=logoScanPC.ico main.py
 ```
 A folder named "dist" will be created with a scanPC executable file.  
 ***Note*** : you need to compile with a 32 bit Python version to perform scan on x86 and x64 Windows OS  
@@ -73,6 +73,7 @@ A folder named "dist" will be created with a scanPC executable file.
 ***Note 3*** : you need [Visual C++ 2010 X86](https://www.microsoft.com/en-US/download/confirmation.aspx?id=5555) to execute a compiled Python program on the targeted computers
 
 Put the code or the exe on a USB key and go scanning some Windows computers.  
+Whatever method you chose, you will need **software_list.json** and **style.css** files in the same directory where you run ScanPC !  
 
 ***Note : To limit viruses spreading, you should always analyze your scanning devices between two scans !***  
 [Decontamine_Linux can help you !](https://github.com/alevoski/decontamine_Linux)
