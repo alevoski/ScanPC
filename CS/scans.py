@@ -63,7 +63,7 @@ PRODUCT_STATE_DICT = {'262144':{'defstatus':'Up to date', 'rtstatus':'Disabled'}
                       '397312':{'defstatus':'Up to date', 'rtstatus':'Enabled'},
                       '397328':{'defstatus':'Outdated', 'rtstatus':'Enabled'},
                       '393472':{'defstatus':'Up to date', 'rtstatus':'Disabled'},
-                      '397584':{'defstatus':'Outdated', '$rtstatus':'Enabled'},
+                      '397584':{'defstatus':'Outdated', 'rtstatus':'Enabled'},
                       '397568':{'defstatus':'Up to date', 'rtstatus':'Enabled'},
                       # '458768'
                       # '458752'
@@ -688,10 +688,10 @@ def process_info(log_file_path):
     ~ tasklist /SVC
     ***FR**
     Liste les processus démarrés sur l'ordinateur
-    Retourne la liste des processus
+    Retourne le dictionnaire des processus
     **EN**
     List computer running processes
-    Retourne the processes list
+    Retourne the processes dict
     '''
     writer.writer('Getting running processes')
     # 1 - Ecriture début de log
@@ -701,17 +701,20 @@ def process_info(log_file_path):
     writer.prepa_log_scan(log_file, elem)
 
     # 2 - Obtenir la liste des processus démarrés
-    # i = 1
     proc_dict = {}
     for proc in psutil.process_iter():
         try:
-            proc_dict[str(proc.name())] = {'Name':str(proc.name()), 'PID':str(proc.pid)}
-            # i+=1
+            proc_timestamp = proc.create_time()
+            proc_start_date = datetime.fromtimestamp(proc_timestamp)
+            proc_dict[str(proc.pid)] = {'Name':str(proc.name()),
+                                        'PID':str(proc.pid),
+                                        'PPID': str(proc.ppid()),
+                                        'Start': str(proc_start_date)}
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
 
     # 3 - Ecrire du fichier CSV
-    header = ['Name', 'PID']
+    header = ['Name', 'PID', 'PPID', 'Start']
     csv_file = log_file_path + 'processes.csv'
     writer.write_csv(csv_file, header, proc_dict)
 
@@ -730,10 +733,10 @@ def services_info(log_file_path):
     ~ wmic service where started=true get name, displayname, processid, startmode, startname, pathname
     **FR**
     Liste les services démarrés sur l'ordinateur
-    Retourne la liste des noms des services démarrés
+    Retourne le dictionnaire des noms des services démarrés
     **EN**
     List computer started services
-    Return the running services names list
+    Return the running services names dict
     '''
     writer.writer('Getting running services')
     # 1 - Ecriture début de log
@@ -787,10 +790,10 @@ def ports_info(log_file_path):
     ~ netstat -a
     **FR**
     Liste les communications réseaux de l'ordinateur
-    Retourne la liste des connexions réseaux
+    Retourne le dictionnaire des connexions réseaux
     **EN**
     List computer network connections
-    Return the network connections list
+    Return the network connections dict
     '''
     writer.writer('Getting network connections')
     # 1 - Ecriture début de log
@@ -827,3 +830,127 @@ def ports_info(log_file_path):
     writer.writelog(log_file, '\n</div>\n')
 
     return ports_dict
+
+def get_files(directory, files_list):
+    '''
+    **FR**
+    Obtenir les fichiers du répertoire en paramètre, retourne files_list
+    **EN**
+    Get files of the directory in parameter, return files_list
+    '''
+    if float(platform.python_version()[:3]) >= 3.5:
+        for elems in os.scandir(directory):
+            try:
+                if elems.is_dir(follow_symlinks=False):
+                    get_files(elems.path, files_list)
+                else:
+                    files_list.append(elems.path)
+            except PermissionError:
+                pass
+    else: # Python 3.4.X or before => Windows XP
+        for root_dir, _, files in os.walk(directory):
+            for filename in files:
+                files_list.append(os.path.join(root_dir, filename))
+    return files_list
+
+def search_reg(hkey, key):
+    '''
+    **FR**
+    Chercher dans regedit les informations contenus dans les sous clés de registre de key en paramètre,
+    Retourne tosave_dict
+    **EN**
+    Search in regedit informations in subkey of hkey in parameter,
+    Return tosave_dict
+    '''
+    hive = hkey
+    try:
+        registry_key = winreg.OpenKey(hive, key, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY) # W7-64/32
+    except FileNotFoundError:
+        return 0
+
+    tosave_dict = {}
+
+    i = 0
+    while 1:
+        try:
+            reg_name, reg_value, reg_type = winreg.EnumValue(registry_key, i)
+            if reg_type == 3: # binary
+                try:
+                    reg_value = reg_value[::2][:reg_value[::2].find(b'\x00')].decode()
+                except UnicodeDecodeError:
+                    pass
+            tosave_dict[reg_name] = str(reg_value).replace(';', ',')
+        except OSError:
+            break
+        i += 1
+    return tosave_dict
+
+def persistence_info(log_file_path):
+    '''
+    cf https://www.fuzzysecurity.com/tutorials/19.html
+    **FR**
+    Chercher les élements persistants dans :
+        - les répertoires de démarrage
+        - Regedit
+    **EN**
+    Search for persistent objects in :
+        - Startup directories
+        - Regedit
+    '''
+    writer.writer('Search for persistent objects')
+    # 1 - Ecriture début de log
+    log_file = log_file_path + "FINAL.html"
+    writer.writelog(log_file, '<div><br>\n')
+    elem = '<h2>Informations about persistent objects of computer "' + COMPUTERNAME + '"</h2>'
+    writer.prepa_log_scan(log_file, elem)
+
+    # 2 - obtenir les objets persistants
+    # 2.1a - startup dirs
+    drive = os.environ['SYSTEMDRIVE']
+    user = os.environ['USERNAME']
+    dir_list = [drive + '/Users/' + user + '/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup',
+                drive + '/ProgramData/Microsoft/Windows/Start Menu/Programs/Startup',
+                drive + '/Documents and Settings/All Users/Start Menu/Programs/Startup']
+    files_list = []
+    for dirs in dir_list:
+        if os.path.isdir(dirs):
+            files_list = get_files(dirs, files_list)
+
+    # 2.1b - Ecriture dans le log
+    writer.writelog(log_file, 'Persistent objects in startup dirs :<br>\n')
+    for elem in files_list:
+        writer.writelog(log_file, elem + '<br>\n')
+
+    # 2.2a - regedit
+    hive_list = {'HKEY_LOCAL_MACHINE': winreg.HKEY_LOCAL_MACHINE, 'HKEY_CURRENT_USER':winreg.HKEY_CURRENT_USER}
+    reg_list = [r'Software\Microsoft\Windows\CurrentVersion\Run',
+                r'Software\Microsoft\Windows\CurrentVersion\RunOnce',
+                r'Software\Microsoft\Windows\CurrentVersion\RunServices',
+                r'Software\Microsoft\Windows\CurrentVersion\RunServicesOnce',
+                r'Software\Microsoft\Windows NT\CurrentVersion\Winlogon']
+
+    per_reg_dict = {}
+    for hkeyname, hkeyvalue in hive_list.items():
+        for key in reg_list:
+            fullhkeyreg = hkeyname + '\\' + key
+            tosave_dict = search_reg(hkeyvalue, key)
+            if tosave_dict:
+                for name, value in tosave_dict.items():
+                    per_reg_dict[fullhkeyreg + '_' + name] = {'regkey':fullhkeyreg, 'name':name, 'value':value}
+
+    # 2.2b - Ecriture du fichier CSV
+    header = ['regkey', 'name', 'value']
+    csv_file = log_file_path + "persistants_reg.csv"
+    writer.write_csv(csv_file, header, per_reg_dict)
+
+    # 2.2c - Transformation du CSV en HTML
+    htmltxt = writer.csv2html(csv_file, 'Persistent reg objects')
+
+    # 2.2d - Ecriture de la fin du log
+    writer.writelog(log_file, '<br>\nPersistent reg objects :<br>\n')
+    writer.writelog(log_file, htmltxt)
+
+    # 3 - Ecriture de la fin du log
+    writer.writelog(log_file, '\n</div>\n')
+
+    return log_file

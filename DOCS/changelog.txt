@@ -3,6 +3,11 @@ Note : this project started in October 2016.
 Many improvements have been done since this date until August 2018.
 Then the project has been refreshed in March 2019 with major modifications, in a more pythonic way.
 
+07/04/2020
+    Changes in scan.py
+        correction in process_info() to have full list of running processes with parent id and start date
+        add persistence_info() with search_reg() and get_files() to find persistent objects in regedit and start folders
+
 15/02/2020
     Change in readme.md
         Add parameter --hiddenimport win32timezone in pyinstaller compilation instruction

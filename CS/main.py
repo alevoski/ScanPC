@@ -77,6 +77,7 @@ def scanpc(log_file_path):
     scans.process_info(log_file_path)
     services_running_dict = scans.services_info(log_file_path)
     scans.ports_info(log_file_path)
+    scans.persistence_info(log_file_path)
 
     texte4 = "\nBasic scan ended.\n"
     writer.writer(texte4)

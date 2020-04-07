@@ -85,7 +85,8 @@ def write_csv(log_file, fieldnames, element_dict):
     with open(log_file, mode='w', newline='', encoding='utf-8-sig') as csvfile:
         writercsv = DictWriter(csvfile, delimiter=';', fieldnames=fieldnames)
         writercsv.writeheader()
-        for _, values in sorted(element_dict.items()):
+        # for _, values in sorted(element_dict.items()):
+        for _, values in element_dict.items():
             writercsv.writerow(values)
 
 def _row2tr(row, attr):
